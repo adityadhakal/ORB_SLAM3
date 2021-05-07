@@ -20,12 +20,17 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#define SAVE_TIMES
+
 #include <unistd.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<string>
 #include<thread>
 #include<opencv2/core/core.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/opencv.hpp>
+using namespace cv;
 
 #include "Tracking.h"
 #include "FrameDrawer.h"
@@ -37,7 +42,6 @@
 #include "ORBVocabulary.h"
 #include "Viewer.h"
 #include "ImuTypes.h"
-#include "Config.h"
 
 
 namespace ORB_SLAM3
@@ -150,6 +154,9 @@ public:
     void SaveTrajectoryEuRoC(const string &filename);
     void SaveKeyFrameTrajectoryEuRoC(const string &filename);
 
+    // Save data used for initialization debug
+    void SaveDebugData(const int &iniIdx);
+
     // Save camera trajectory in the KITTI dataset format.
     // Only for stereo and RGB-D. This method does not work for monocular.
     // Call first Shutdown()
@@ -173,13 +180,13 @@ public:
 
     void ChangeDataset();
 
-#ifdef REGISTER_TIMES
-    void InsertRectTime(double& time);
-
-    void InsertTrackTime(double& time);
-#endif
+    //void SaveAtlas(int type);
 
 private:
+
+    //bool LoadAtlas(string filename, int type);
+
+    //string CalculateCheckSum(string filename, int type);
 
     // Input sensor
     eSensor mSensor;
@@ -190,7 +197,8 @@ private:
     // KeyFrame database for place recognition (relocalization and loop detection).
     KeyFrameDatabase* mpKeyFrameDatabase;
 
-    // Atlas structure that stores the pointers to all KeyFrames and MapPoints.
+    // Map structure that stores the pointers to all KeyFrames and MapPoints.
+    //Map* mpMap;
     Atlas* mpAtlas;
 
     // Tracker. It receives a frame and computes the associated camera pose.

@@ -20,6 +20,9 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+#define SAVE_TIMES
+#define CUDA_ENABLED
+
 #include<vector>
 
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
@@ -27,10 +30,16 @@
 
 #include "ImuTypes.h"
 #include "ORBVocabulary.h"
-#include "Config.h"
+#include "ORBextractor.h"
 
 #include <mutex>
 #include <opencv2/opencv.hpp>
+
+//CUDA related functions.. for cuda malloc managed allocation
+#define CUDA_ENABLED
+#ifdef CUDA_ENABLED
+#include</usr/local/cuda/include/cuda_runtime.h>
+#endif  //CUDA_ENABLED
 
 namespace ORB_SLAM3
 {
@@ -48,6 +57,12 @@ class Frame
 public:
     Frame();
 
+    //overriding new
+#ifdef CUDA_ENABLED
+    void * operator new(size_t);
+    void operator delete(void *);
+#endif //CUDA_ENABLED
+
     // Copy constructor.
     Frame(const Frame &frame);
 
@@ -59,6 +74,9 @@ public:
 
     // Constructor for Monocular cameras.
     Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
+
+    // Destructor
+    // ~Frame();
 
     // Extract ORB on the image. 0 for left image and 1 for right image.
     void ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1);
@@ -100,6 +118,7 @@ public:
     // and fill variables of the MapPoint to be used by the tracking
     bool isInFrustum(MapPoint* pMP, float viewingCosLimit);
 
+
     bool ProjectPointDistort(MapPoint* pMP, cv::Point2f &kp, float &u, float &v);
 
     cv::Mat inRefCoordinates(cv::Mat pCw);
@@ -125,8 +144,10 @@ public:
     void setIntegrated();
 
     cv::Mat mRwc;
-    cv::Mat mOw;
+    //cv::Mat mOw;
 public:
+    cv::Mat mOw;
+    float mOw_f[4];
     // Vocabulary used for relocalization.
     ORBVocabulary* mpORBvocabulary;
 
@@ -243,10 +264,10 @@ public:
 
     int mnDataset;
 
-#ifdef REGISTER_TIMES
-    double mTimeORB_Ext;
     double mTimeStereoMatch;
-#endif
+    double mTimeORB_Ext;
+    bool answers[10000];
+
 
 private:
 
@@ -261,21 +282,24 @@ private:
     // Assign keypoints to the grid for speed up feature matching (called in the constructor).
     void AssignFeaturesToGrid();
 
-    // Rotation, translation and camera center
-    cv::Mat mRcw;
-    cv::Mat mtcw;
-    //==mtwc
 
-    cv::Matx31f mOwx;
-    cv::Matx33f mRcwx;
-    cv::Matx31f mtcwx;
+    //==mtwc
 
     bool mbImuPreintegrated;
 
     std::mutex *mpMutexImu;
 
 public:
+    // Rotation, translation and camera center
+        cv::Mat mRcw;
+        cv::Mat mtcw;
+       float mrcw_f[9];//float of above variables
+       float mtcw_f[3];
+
     GeometricCamera* mpCamera, *mpCamera2;
+
+    //camera parameter. aditya. cuda
+    float cam_parameter[8];
 
     //Number of KeyPoints extracted in the left and right images
     int Nleft, Nright;
@@ -296,7 +320,6 @@ public:
     std::vector<std::size_t> mGridRight[FRAME_GRID_COLS][FRAME_GRID_ROWS];
 
     cv::Mat mTlr, mRlr, mtlr, mTrl;
-    cv::Matx34f mTrlx, mTlrx;
 
     Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, GeometricCamera* pCamera, GeometricCamera* pCamera2, cv::Mat& Tlr,Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
 
@@ -304,6 +327,7 @@ public:
     void ComputeStereoFishEyeMatches();
 
     bool isInFrustumChecks(MapPoint* pMP, float viewingCosLimit, bool bRight = false);
+
 
     cv::Mat UnprojectStereoFishEye(const int &i);
 

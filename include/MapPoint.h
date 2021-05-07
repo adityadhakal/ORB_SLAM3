@@ -29,7 +29,14 @@
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/map.hpp>
+
+
+
+//CUDA related functions.. for cuda malloc managed allocation
+#define CUDA_ENABLED
+#ifdef CUDA_ENABLED
+#include</usr/local/cuda/include/cuda_runtime.h>
+#endif  //CUDA_ENABLED
 
 namespace ORB_SLAM3
 {
@@ -40,8 +47,97 @@ class Frame;
 
 class MapPoint
 {
+    template<class Archive>
+    void serializeMatrix(Archive &ar, cv::Mat& mat, const unsigned int version)
+    {
+        int cols, rows, type;
+        bool continuous;
+
+        if (Archive::is_saving::value) {
+            cols = mat.cols; rows = mat.rows; type = mat.type();
+            continuous = mat.isContinuous();
+        }
+
+        ar & cols & rows & type & continuous;
+        if (Archive::is_loading::value)
+            mat.create(rows, cols, type);
+
+        if (continuous) {
+            const unsigned int data_size = rows * cols * mat.elemSize();
+            ar & boost::serialization::make_array(mat.ptr(), data_size);
+        } else {
+            const unsigned int row_size = cols*mat.elemSize();
+            for (int i = 0; i < rows; i++) {
+                ar & boost::serialization::make_array(mat.ptr(i), row_size);
+            }
+        }
+    }
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & mnId;
+        ar & mnFirstKFid;
+        ar & mnFirstFrame;
+        ar & nObs;
+        // Variables used by the tracking
+        ar & mTrackProjX;
+        ar & mTrackProjY;
+        ar & mTrackDepth;
+        ar & mTrackDepthR;
+        ar & mTrackProjXR;
+        ar & mTrackProjYR;
+        ar & mbTrackInView;
+        ar & mbTrackInViewR;
+        ar & mnTrackScaleLevel;
+        ar & mnTrackScaleLevelR;
+        ar & mTrackViewCos;
+        ar & mTrackViewCosR;
+        ar & mnTrackReferenceForFrame;
+        ar & mnLastFrameSeen;
+
+        // Variables used by local mapping
+        ar & mnBALocalForKF;
+        ar & mnFuseCandidateForKF;
+
+        // Variables used by loop closing and merging
+        ar & mnLoopPointForKF;
+        ar & mnCorrectedByKF;
+        ar & mnCorrectedReference;
+        serializeMatrix(ar,mPosGBA,version);
+        ar & mnBAGlobalForKF;
+        ar & mnBALocalForMerge;
+        serializeMatrix(ar,mPosMerge,version);
+        serializeMatrix(ar,mNormalVectorMerge,version);
+
+        // Protected variables
+        serializeMatrix(ar,mWorldPos,version);
+        //ar & BOOST_SERIALIZATION_NVP(mBackupObservationsId);
+        ar & mBackupObservationsId1;
+        ar & mBackupObservationsId2;
+        serializeMatrix(ar,mNormalVector,version);
+        serializeMatrix(ar,mDescriptor,version);
+        ar & mBackupRefKFId;
+        ar & mnVisible;
+        ar & mnFound;
+
+        ar & mbBad;
+        ar & mBackupReplacedId;
+
+        ar & mfMinDistance;
+        ar & mfMaxDistance;
+
+    }
+
 
 public:
+#ifdef CUDA_ENABLED
+    void * operator new(size_t);
+    void operator delete(void *);
+#endif //CUDA_ENABLED
+
+
     MapPoint();
 
     MapPoint(const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap);
@@ -51,13 +147,10 @@ public:
     void SetWorldPos(const cv::Mat &Pos);
 
     cv::Mat GetWorldPos();
+    //for the GPU side data pointer
+    float * GetWorldPosCUDA();
 
     cv::Mat GetNormal();
-
-    cv::Matx31f GetWorldPos2();
-
-    cv::Matx31f GetNormal2();
-
     KeyFrame* GetReferenceKeyFrame();
 
     std::map<KeyFrame*,std::tuple<int,int>> GetObservations();
@@ -71,6 +164,7 @@ public:
 
     void SetBadFlag();
     bool isBad();
+    __device__ bool isBadCuda(); //Aditya cuda isbad
 
     void Replace(MapPoint* pMP);    
     MapPoint* GetReplaced();
@@ -93,9 +187,18 @@ public:
     float GetMaxDistanceInvariance();
     int PredictScale(const float &currentDist, KeyFrame*pKF);
     int PredictScale(const float &currentDist, Frame* pF);
+    //Aditya's Predict scale ---Not needed.
+    __device__ int PredictScaleCuda(const float &currentDist, Frame* pF);
+    __device__ float GetMinDistanceInvarianceCuda();
+    __device__ float GetMaxDistanceInvarianceCuda();
 
     Map* GetMap();
     void UpdateMap(Map* pMap);
+
+    void PrintObservations();
+
+    void PreSave(set<KeyFrame*>& spKF,set<MapPoint*>& spMP);
+    void PostLoad(map<long unsigned int, KeyFrame*>& mpKFid, map<long unsigned int, MapPoint*>& mpMPid);
 
 public:
     long unsigned int mnId;
@@ -144,36 +247,47 @@ public:
 
     unsigned int mnOriginMapId;
 
+    // Scale invariance distances
+    //public variables because CUDA hates protected
+        float mfMinDistance;
+        float mfMaxDistance;
+
+    // Position in absolute coordinates
+        cv::Mat mWorldPos;
+    // Bad flag (we do not currently erase MapPoint from memory)
+        bool mbBad;
+
+    // Mean viewing direction
+     cv::Mat mNormalVector;
+
 protected:    
 
-     // Position in absolute coordinates
-     cv::Mat mWorldPos;
-     cv::Matx31f mWorldPosx;
+
 
      // Keyframes observing the point and associated index in keyframe
      std::map<KeyFrame*,std::tuple<int,int> > mObservations;
+     // For save relation without pointer, this is necessary for save/load function
+     std::map<long unsigned int, int> mBackupObservationsId1;
+     std::map<long unsigned int, int> mBackupObservationsId2;
 
-     // Mean viewing direction
-     cv::Mat mNormalVector;
-     cv::Matx31f mNormalVectorx;
+
 
      // Best descriptor to fast matching
      cv::Mat mDescriptor;
 
      // Reference KeyFrame
      KeyFrame* mpRefKF;
+     long unsigned int mBackupRefKFId;
 
      // Tracking counters
      int mnVisible;
      int mnFound;
 
-     // Bad flag (we do not currently erase MapPoint from memory)
-     bool mbBad;
-     MapPoint* mpReplaced;
 
-     // Scale invariance distances
-     float mfMinDistance;
-     float mfMaxDistance;
+     MapPoint* mpReplaced;
+     // For save relation without pointer, this is necessary for save/load function
+     long long int mBackupReplacedId;
+
 
      Map* mpMap;
 
