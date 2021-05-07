@@ -54,13 +54,16 @@ ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/include/CameraModels
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
+/usr/local/cuda/samples/common/inc2
+/usr/local/cuda/include
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 add_library(${PROJECT_NAME} SHARED
 src/System.cc
-src/Tracking.cc
+#src/Tracking.cc
+src/Tracking.cu
 src/LocalMapping.cc
 src/LoopClosing.cc
 src/ORBextractor.cc
@@ -85,6 +88,10 @@ src/CameraModels/KannalaBrandt8.cpp
 src/OptimizableTypes.cpp
 src/MLPnPsolver.cpp
 src/TwoViewReconstruction.cc
+src/cuda/Allocator_gpu.cu
+src/cuda/Fast_gpu.cu
+src/cuda/Orb_gpu.cu
+src/cuda/Cuda.cu
 include/System.h
 include/Tracking.h
 include/LocalMapping.h
@@ -113,6 +120,11 @@ include/OptimizableTypes.h
 include/MLPnPsolver.h
 include/TwoViewReconstruction.h
 include/Config.h
+include/Utils.hpp
+include/cuda/Allocator.hpp
+include/cuda/Cuda.hpp
+include/cuda/Fast.hpp
+include/cuda/Orb.hpp
 )
 
 add_subdirectory(Thirdparty/g2o)
