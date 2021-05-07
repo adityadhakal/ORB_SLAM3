@@ -15,7 +15,10 @@
 * You should have received a copy of the GNU General Public License along with ORB-SLAM3.
 * If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include<opencv2/imgcodecs/legacy/constants_c.h>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/opencv.hpp>
+using namespace cv;
 
 #include "Sim3Solver.h"
 
@@ -304,7 +307,7 @@ cv::Mat Sim3Solver::find(vector<bool> &vbInliers12, int &nInliers)
 
 void Sim3Solver::ComputeCentroid(cv::Mat &P, cv::Mat &Pr, cv::Mat &C)
 {
-    cv::reduce(P,C,1,cv::REDUCE_SUM);
+    cv::reduce(P,C,1,CV_REDUCE_SUM);
     C = C/P.cols;
 
     for(int i=0; i<P.cols; i++)

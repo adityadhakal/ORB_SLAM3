@@ -20,6 +20,7 @@
 #include "ORBmatcher.h"
 
 #include<mutex>
+#include </usr/local/cuda/include/cuda_runtime.h>
 
 namespace ORB_SLAM3
 {
@@ -44,10 +45,12 @@ MapPoint::MapPoint(const cv::Mat &Pos, KeyFrame *pRefKF, Map* pMap):
     mnOriginMapId(pMap->GetId())
 {
     Pos.copyTo(mWorldPos);
-    mWorldPosx = cv::Matx31f(Pos.at<float>(0), Pos.at<float>(1), Pos.at<float>(2));
     mNormalVector = cv::Mat::zeros(3,1,CV_32F);
-    mNormalVectorx = cv::Matx31f::zeros();
 
+    //cout<<"World Pos size: "<<mWorldPos.total()<<endl;
+
+    cudaHostRegister(mWorldPos.data,mWorldPos.total()*mWorldPos.elemSize(),cudaHostRegisterDefault);
+    cudaHostRegister(mNormalVector.data,mNormalVector.total()*mNormalVector.elemSize(),cudaHostRegisterDefault);
     mbTrackInViewR = false;
     mbTrackInView = false;
 
@@ -69,7 +72,6 @@ MapPoint::MapPoint(const double invDepth, cv::Point2f uv_init, KeyFrame* pRefKF,
     mpHostKF = pHostKF;
 
     mNormalVector = cv::Mat::zeros(3,1,CV_32F);
-    mNormalVectorx = cv::Matx31f::zeros();
 
     // Worldpos is not set
     // MapPoints can be created from Tracking and Local Mapping. This mutex avoid conflicts with id.
@@ -84,8 +86,6 @@ MapPoint::MapPoint(const cv::Mat &Pos, Map* pMap, Frame* pFrame, const int &idxF
     mnFound(1), mbBad(false), mpReplaced(NULL), mpMap(pMap), mnOriginMapId(pMap->GetId())
 {
     Pos.copyTo(mWorldPos);
-    mWorldPosx = cv::Matx31f(Pos.at<float>(0), Pos.at<float>(1), Pos.at<float>(2));
-
     cv::Mat Ow;
     if(pFrame -> Nleft == -1 || idxF < pFrame -> Nleft){
         Ow = pFrame->GetCameraCenter();
@@ -99,8 +99,6 @@ MapPoint::MapPoint(const cv::Mat &Pos, Map* pMap, Frame* pFrame, const int &idxF
     }
     mNormalVector = mWorldPos - Ow;
     mNormalVector = mNormalVector/cv::norm(mNormalVector);
-    mNormalVectorx = cv::Matx31f(mNormalVector.at<float>(0), mNormalVector.at<float>(1), mNormalVector.at<float>(2));
-
 
     cv::Mat PC = Pos - Ow;
     const float dist = cv::norm(PC);
@@ -125,7 +123,6 @@ void MapPoint::SetWorldPos(const cv::Mat &Pos)
     unique_lock<mutex> lock2(mGlobalMutex);
     unique_lock<mutex> lock(mMutexPos);
     Pos.copyTo(mWorldPos);
-    mWorldPosx = cv::Matx31f(Pos.at<float>(0), Pos.at<float>(1), Pos.at<float>(2));
 }
 
 cv::Mat MapPoint::GetWorldPos()
@@ -134,23 +131,19 @@ cv::Mat MapPoint::GetWorldPos()
     return mWorldPos.clone();
 }
 
+//for the GPU side data pointer
+float * MapPoint::GetWorldPosCUDA()
+{
+	return (float *) mWorldPos.data;
+}
+
 cv::Mat MapPoint::GetNormal()
 {
     unique_lock<mutex> lock(mMutexPos);
     return mNormalVector.clone();
 }
 
-cv::Matx31f MapPoint::GetWorldPos2()
-{
-    unique_lock<mutex> lock(mMutexPos);
-    return mWorldPosx;
-}
 
-cv::Matx31f MapPoint::GetNormal2()
-{
-    unique_lock<mutex> lock(mMutexPos);
-    return mNormalVectorx;
-}
 
 KeyFrame* MapPoint::GetReferenceKeyFrame()
 {
@@ -192,6 +185,7 @@ void MapPoint::EraseObservation(KeyFrame* pKF)
         unique_lock<mutex> lock(mMutexFeatures);
         if(mObservations.count(pKF))
         {
+            //int idx = mObservations[pKF];
             tuple<int,int> indexes = mObservations[pKF];
             int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
 
@@ -326,6 +320,11 @@ bool MapPoint::isBad()
     lock(lock1, lock2);
 
     return mbBad;
+}
+
+__device__ bool MapPoint::isBadCuda()
+{
+	return mbBad;// just return the value
 }
 
 void MapPoint::IncreaseVisible(int n)
@@ -500,6 +499,7 @@ void MapPoint::UpdateNormalAndDepth()
         level = pRefKF -> mvKeysRight[rightIndex - pRefKF -> NLeft].octave;
     }
 
+    //const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
     const float levelScaleFactor =  pRefKF->mvScaleFactors[level];
     const int nLevels = pRefKF->mnScaleLevels;
 
@@ -508,7 +508,6 @@ void MapPoint::UpdateNormalAndDepth()
         mfMaxDistance = dist*levelScaleFactor;
         mfMinDistance = mfMaxDistance/pRefKF->mvScaleFactors[nLevels-1];
         mNormalVector = normal/n;
-        mNormalVectorx = cv::Matx31f(mNormalVector.at<float>(0), mNormalVector.at<float>(1), mNormalVector.at<float>(2));
     }
 }
 
@@ -516,7 +515,6 @@ void MapPoint::SetNormalVector(cv::Mat& normal)
 {
     unique_lock<mutex> lock3(mMutexPos);
     mNormalVector = normal;
-    mNormalVectorx = cv::Matx31f(mNormalVector.at<float>(0), mNormalVector.at<float>(1), mNormalVector.at<float>(2));
 }
 
 float MapPoint::GetMinDistanceInvariance()
@@ -524,10 +522,22 @@ float MapPoint::GetMinDistanceInvariance()
     unique_lock<mutex> lock(mMutexPos);
     return 0.8f*mfMinDistance;
 }
+__device__ float MapPoint::GetMinDistanceInvarianceCuda()
+{
+    //unique_lock<mutex> lock(mMutexPos);
+    return 0.8f*mfMinDistance;
+}
+
 
 float MapPoint::GetMaxDistanceInvariance()
 {
     unique_lock<mutex> lock(mMutexPos);
+    return 1.2f*mfMaxDistance;
+}
+
+__device__ float MapPoint::GetMaxDistanceInvarianceCuda()
+{
+    //unique_lock<mutex> lock(mMutexPos);
     return 1.2f*mfMaxDistance;
 }
 
@@ -565,6 +575,36 @@ int MapPoint::PredictScale(const float &currentDist, Frame* pF)
     return nScale;
 }
 
+__device__ int MapPoint::PredictScaleCuda(const float &currentDist, Frame* pF)
+{
+    float ratio;
+    //{
+        //unique_lock<mutex> lock(mMutexPos);
+        ratio = mfMaxDistance/currentDist;
+    //}
+
+    int nScale = ceil(log(ratio)/pF->mfLogScaleFactor);
+    if(nScale<0)
+        nScale = 0;
+    else if(nScale>=pF->mnScaleLevels)
+        nScale = pF->mnScaleLevels-1;
+
+    return nScale;
+}
+
+
+void MapPoint::PrintObservations()
+{
+    cout << "MP_OBS: MP " << mnId << endl;
+    for(map<KeyFrame*,tuple<int,int>>::iterator mit=mObservations.begin(), mend=mObservations.end(); mit!=mend; mit++)
+    {
+        KeyFrame* pKFi = mit->first;
+        tuple<int,int> indexes = mit->second;
+        int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+        cout << "--OBS in KF " << pKFi->mnId << " in map " << pKFi->GetMap()->GetId() << endl;
+    }
+}
+
 Map* MapPoint::GetMap()
 {
     unique_lock<mutex> lock(mMutexMap);
@@ -576,5 +616,100 @@ void MapPoint::UpdateMap(Map* pMap)
     unique_lock<mutex> lock(mMutexMap);
     mpMap = pMap;
 }
+
+void MapPoint::PreSave(set<KeyFrame*>& spKF,set<MapPoint*>& spMP)
+{
+    mBackupReplacedId = -1;
+    if(mpReplaced && spMP.find(mpReplaced) != spMP.end())
+        mBackupReplacedId = mpReplaced->mnId;
+
+    mBackupObservationsId1.clear();
+    mBackupObservationsId2.clear();
+    // Save the id and position in each KF who view it
+    for(std::map<KeyFrame*,std::tuple<int,int> >::const_iterator it = mObservations.begin(), end = mObservations.end(); it != end; ++it)
+    {
+        KeyFrame* pKFi = it->first;
+        if(spKF.find(pKFi) != spKF.end())
+        {
+            mBackupObservationsId1[it->first->mnId] = get<0>(it->second);
+            mBackupObservationsId2[it->first->mnId] = get<1>(it->second);
+        }
+        else
+        {
+            EraseObservation(pKFi);
+        }
+    }
+
+    // Save the id of the reference KF
+    if(spKF.find(mpRefKF) != spKF.end())
+    {
+        mBackupRefKFId = mpRefKF->mnId;
+    }
+}
+
+void MapPoint::PostLoad(map<long unsigned int, KeyFrame*>& mpKFid, map<long unsigned int, MapPoint*>& mpMPid)
+{
+    mpRefKF = mpKFid[mBackupRefKFId];
+    if(!mpRefKF)
+    {
+        cout << "MP without KF reference " << mBackupRefKFId << "; Num obs: " << nObs << endl;
+    }
+    mpReplaced = static_cast<MapPoint*>(NULL);
+    if(mBackupReplacedId>=0)
+    {
+       map<long unsigned int, MapPoint*>::iterator it = mpMPid.find(mBackupReplacedId);
+       if (it != mpMPid.end())
+        mpReplaced = it->second;
+    }
+
+    mObservations.clear();
+
+    for(map<long unsigned int, int>::const_iterator it = mBackupObservationsId1.begin(), end = mBackupObservationsId1.end(); it != end; ++it)
+    {
+        KeyFrame* pKFi = mpKFid[it->first];
+        map<long unsigned int, int>::const_iterator it2 = mBackupObservationsId2.find(it->first);
+        std::tuple<int, int> indexes = tuple<int,int>(it->second,it2->second);
+        if(pKFi)
+        {
+           mObservations[pKFi] = indexes;
+        }
+    }
+
+    mBackupObservationsId1.clear();
+    mBackupObservationsId2.clear();
+}
+
+#ifdef CUDA_ENABLED
+//custom allocator... allocates memory as cudaMallocManaged
+void * MapPoint::operator new(size_t size){
+	//std::cout<<"Called New MapPoint\n";
+	void *storage = nullptr;
+	cudaError_t error;
+	error = cudaMallocManaged(&storage,size,cudaMemAttachGlobal);
+	//storage = malloc(size);
+	//error = cudaHostRegister(storage,size,cudaHostRegisterDefault);
+	if(error != cudaSuccess){
+		std::cout<<"---- GPU Memory Allocation Failed in MapPoint.cc------ "<<std::endl;
+		printf("CUDA error: %s\n", cudaGetErrorString(error));
+	}
+	return storage;
+}
+//custom deallocator.. needs to be deallocated by cudaFree
+void MapPoint::operator delete(void * add){
+	//return;
+
+	cudaError_t error;
+	//std::cout<<"Deleted the mappoint\n";
+	error = cudaFree(add);
+	//error = cudaHostUnregister(add);
+
+	if(error != cudaSuccess){
+		std::cout<<"---- GPU memory De-Allocation failed ----"<<std::endl;
+	}
+
+	//free(add);
+}
+#endif //CUDA_ENABLED
+
 
 } //namespace ORB_SLAM

@@ -33,7 +33,6 @@
 namespace ORB_SLAM3
 {
 
-
 long unsigned int Frame::nNextId=0;
 bool Frame::mbInitialComputations=true;
 float Frame::cx, Frame::cy, Frame::fx, Frame::fy, Frame::invfx, Frame::invfy;
@@ -298,8 +297,7 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
 #ifdef SAVE_TIMES
     std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
 
-    //mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
-    mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::micro> >(time_EndExtORB - time_StartExtORB).count();
+    mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
 
@@ -477,7 +475,114 @@ cv::Mat Frame::GetImuPose()
 
 
 
+//GPU code for isInFrustrum
+__global__ void Frame::isInFrustumCUDA(MapPoint *pMPe, float viewingCosLimit,float *parameters, float* normal, bool *ans, float* mRcwd, float* mtcwd )
+{
+	int idx = blockDim.x*blockIdx.x + threadIdx.x;
+	MapPoint *pMP = pMPe[idx];
+	bool answer = ans[idx];
+	 if(Nleft == -1){
+	    	//cout<<"NLeft not -1\n";
+	        // cout << "\na";
+	        pMP->mbTrackInView = false;
+	        pMP->mTrackProjX = -1;
+	        pMP->mTrackProjY = -1;
 
+	        // 3D in absolute coordinates
+	        float* P = pMP->GetWorldPosCUDA();
+	        //cout<<"Size of world pos: "<<P.size()<<endl;
+
+	        // cout << "b";
+
+	        // 3D in camera coordinates
+	        //const cv::Mat Pc = mRcw*P+mtcw;
+	        //Rewrite for GPU
+	        float Pc[3];
+	        //matrix multiplication
+	        Pc[0] = P[0]*mRcw[0]+P[1]*mRCw[1]+P[2]*mRCw[2]+ mtcw[0];
+	        Pc[1] = P[0]*mRcw[3]+P[1]*mRCw[4]+P[2]*mRCw[5]+mtcw[1];
+	        Pc[2] =  P[0]*mRcw[6]+P[1]*mRCw[7]+P[2]*mRCw[8]+mtcw[2];
+	        //cout<<"Size of camera coordinates "<<pc.size()<<endl;
+	        //const float Pc_dist = cv::norm(Pc);
+	        const float Pc_dist = sqrtf(powf(Pc[0],2),powf(Pc[1],2),powf(Pc[2],2));
+
+
+	        // Check positive depth
+	        //const float &PcZ = Pc.at<float>(2);
+	        const float Pcz = Pc[2];
+	        const float invz = 1.0f/PcZ;
+	        if(PcZ<0.0f)
+	            answer= false;
+
+	        const cv::Point2f uv = mpCamera->project(Pc);
+
+	        //rewrite the entire Project as pinhole parameter
+	        const float uv_x = parameters[0]*Pc[0]/Pc[3]+parameters[2];
+	        const float uv_y = parameters[1]*Pc[2]/Pc[3]+parameters[3];
+
+	        // cout << "c";
+
+	        if(uv_x<mnMinX || uv_x>mnMaxX)
+	            answer= false;
+	        if(uv_y<mnMinY || uv_y>mnMaxY)
+	            answer= false;
+
+	        // cout << "d";
+	        pMP->mTrackProjX = uv_x;
+	        pMP->mTrackProjY = uv_y;
+
+	        // Check distance is in the scale invariance region of the MapPoint
+	        const float maxDistance = pMP->GetMaxDistanceInvarianceCuda();
+	        const float minDistance = pMP->GetMinDistanceInvarianceCuda();
+	        float PO[3];
+	        PO[0] = P[0]-mOw[0];
+	        PO[1] = P[1]-mOw[1];
+	        PO[2] = P[2]-mOw[2];
+
+	        //const cv::Mat PO = P-mOw;
+	        //const float dist = cv::norm(PO);
+	        const float dist = sqrtf(powf(PO[0],2)+powf(PO[1],2)+powf(PO[2],2));
+
+	        if(dist<minDistance || dist>maxDistance)
+	            answer= false;
+
+	        // cout << "e";
+
+	        // Check viewing angle
+	        //cv::Mat Pn = pMP->GetNormal();
+
+	        //float *pn = normal;
+
+	        // cout << "f";
+
+	        //const float viewCos = PO.dot(Pn)/dist;
+	        const float viewCos = (normal[0]*PO[0]+normal[0]*PO[0]+normal[0]*PO[0])/dist;
+
+	        if(viewCos<viewingCosLimit)
+	            answer= false;
+
+	        // Predict scale in the image
+	        const int nPredictedLevel = pMP->PredictScaleCuda(dist,this);
+
+	        // cout << "g";
+
+	        // Data used by the tracking
+	        pMP->mbTrackInView = true;
+	        pMP->mTrackProjX = uv.x;
+	        pMP->mTrackProjXR = uv.x - mbf*invz;
+
+	        pMP->mTrackDepth = Pc_dist;
+	        // cout << "h";
+
+	        pMP->mTrackProjY = uv.y;
+	        pMP->mnTrackScaleLevel= nPredictedLevel;
+	        pMP->mTrackViewCos = viewCos;
+
+	        // cout << "i";
+
+	        answer= true;
+	    }
+}
 
 bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
 {
@@ -492,15 +597,15 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
         cv::Mat P = pMP->GetWorldPos();
         //cout<<"Size of world pos: "<<P.size()<<" Rows: "<<P.rows<<" Cols "<<P.cols<<endl<<"Size of mRcw and mtcw: "<<mRcw.size()<<mtcw.size()<<endl ;
         //cout<<"P "<<P<<" mRcw "<<mRcw<<" mtcw "<<mtcw<<endl;
-        //cout<<"mRcw: "<<mRcw<<" "<<((float*)(mRcw.data))[0]<<" "<<((float*)(mRcw.data))[4]<<endl;
+        cout<<"mRcw: "<<mRcw<<" "<<((float*)(mRcw.data))[0]<<" "<<((float*)(mRcw.data))[4]<<endl;
         // cout << "b";
 
         // 3D in camera coordinates
         const cv::Mat Pc = mRcw*P+mtcw;
-        //cout<<"Result: "<< Pc <<endl;
+        cout<<"Result: "<< Pc <<endl;
         //cout<<"Size of camera coordinates "<<Pc.size()<<endl;
         const float Pc_dist = cv::norm(Pc);
-        //cout<<"Norm: "<<Pc_dist<<endl;
+        cout<<"Norm: "<<Pc_dist<<endl;
 
         // Check positive depth
         const float &PcZ = Pc.at<float>(2);
@@ -564,7 +669,7 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
         return true;
     }
     else{
-    	//cout<<"-----##### NLeft is not -1 *****####\n";
+    	//cout<<"-----##### NLeft is -1 *****####\n";
         pMP->mbTrackInView = false;
         pMP->mbTrackInViewR = false;
         pMP -> mnTrackScaleLevel = -1;
@@ -721,8 +826,8 @@ vector<size_t> Frame::GetFeaturesInArea(const float &x, const float  &y, const f
 
 bool Frame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
 {
-    posX = static_cast<int>(std::round((kp.pt.x-mnMinX)*mfGridElementWidthInv));
-    posY = static_cast<int>(std::round((kp.pt.y-mnMinY)*mfGridElementHeightInv));
+    posX = round((kp.pt.x-mnMinX)*mfGridElementWidthInv);
+    posY = round((kp.pt.y-mnMinY)*mfGridElementHeightInv);
 
     //Keypoint's coordinates are undistorted, which could cause to go out of the image
     if(posX<0 || posX>=FRAME_GRID_COLS || posY<0 || posY>=FRAME_GRID_ROWS)
@@ -896,16 +1001,13 @@ void Frame::ComputeStereoMatches()
             // coordinates in image pyramid at keypoint scale
             const float uR0 = mvKeysRight[bestIdxR].pt.x;
             const float scaleFactor = mvInvScaleFactors[kpL.octave];
-            const float scaleduL = std::round(kpL.pt.x*scaleFactor);
-            const float scaledvL = std::round(kpL.pt.y*scaleFactor);
-            const float scaleduR0 = std::round(uR0*scaleFactor);
+            const float scaleduL = round(kpL.pt.x*scaleFactor);
+            const float scaledvL = round(kpL.pt.y*scaleFactor);
+            const float scaleduR0 = round(uR0*scaleFactor);
 
             // sliding window search
             const int w = 5;
-            //change to accomodate GPU MAT
-            //cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
-            cv::cuda::GpuMat gMat = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
-            cv::Mat IL(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+            cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
             //IL.convertTo(IL,CV_32F);
             //IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
             IL.convertTo(IL,CV_16S);
@@ -924,10 +1026,7 @@ void Frame::ComputeStereoMatches()
 
             for(int incR=-L; incR<=+L; incR++)
             {
-                //    cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-                // aditya changed due to gpu mat
-                cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-                cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+                cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 //IR.convertTo(IR,CV_32F);
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
                 IR.convertTo(IR,CV_16S);
@@ -1265,8 +1364,6 @@ void * Frame::operator new(size_t size){
 	void *storage = nullptr;
 	cudaError_t error;
 	error = cudaMallocManaged(&storage,size,cudaMemAttachGlobal);
-	//storage = malloc(size);
-	//error = cudaHostRegister(storage,size,cudaHostRegisterDefault);
 	if(error != cudaSuccess){
 		std::cout<<"---- GPU Memory Allocation Failed in Frame.cc ------ "<<std::endl;
 	}
@@ -1274,17 +1371,11 @@ void * Frame::operator new(size_t size){
 }
 //custom deallocator.. needs to be deallocated by cudaFree
 void Frame::operator delete(void * add){
-	//return;
-	cudaError_t error;
 	//std::cout<<"Deleted the mappoint\n";
-	error = cudaFree(add);
-
-
-	//error = cudaHostUnregister(add);
+	cudaError_t error = cudaFree(add);
 	if(error != cudaSuccess){
 		std::cout<<"---- GPU memory De-Allocation failed in Frame.cc ----"<<std::endl;
 	}
-		//free(add);
 }
 #endif //CUDA_ENABLED
 
