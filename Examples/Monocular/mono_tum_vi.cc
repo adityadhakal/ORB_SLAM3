@@ -158,7 +158,7 @@ int main(int argc, char **argv)
                 file_data = boost::asio::buffer_cast<const char*>(receive_buffer.data());
                 //cout << data << endl;
             }
-            im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data, AUTO_STEP), cv::IMREAD_UNCHANGED);
+            im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data, sizeof(char)), cv::IMREAD_UNCHANGED);
 
 #else //SOCKET_PROGRAM
             // Read image from file
