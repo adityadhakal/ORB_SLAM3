@@ -155,7 +155,7 @@ int main(int argc, char **argv)
                 cout << "receive failed: " << error.message() << endl;
             }
             else {
-                file_data = boost::asio::buffer_cast<const char*>(receive_buffer.data());
+                file_data = boost::asio::buffer_cast<char*>(receive_buffer.data());
                 //cout << data << endl;
             }
             im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data, sizeof(char)), cv::IMREAD_UNCHANGED);
