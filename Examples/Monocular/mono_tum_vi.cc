@@ -135,9 +135,10 @@ int main(int argc, char **argv)
             // request/message from client
             //waiting for connection
             acceptor_.accept(socket_);
+            boost::system::error_code error;
             /*
             const string msg = to_string(ni);
-            boost::system::error_code error;
+            
             size_t file_size = boost::asio::write( socket, boost::asio::buffer(msg), error );
             if( !error ) {
                cout << "Client sent hello message!" << endl;
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
                 file_data = boost::asio::buffer_cast<const char*>(receive_buffer.data());
                 //cout << data << endl;
             }
-            im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data), cv::IMREAD_UNCHANGED);
+            im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data, AUTO_STEP), cv::IMREAD_UNCHANGED);
 
 #else //SOCKET_PROGRAM
             // Read image from file
