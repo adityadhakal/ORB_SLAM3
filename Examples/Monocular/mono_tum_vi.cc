@@ -150,12 +150,12 @@ int main(int argc, char **argv)
             // getting response from server
             boost::asio::streambuf receive_buffer;
             size_t file_size  = boost::asio::read(socket_, receive_buffer, boost::asio::transfer_all(), error);
-            char* file_data;
+            void* file_data;
             if( error && error != boost::asio::error::eof ) {
                 cout << "receive failed: " << error.message() << endl;
             }
             else {
-                file_data = boost::asio::buffer_cast<char*>(receive_buffer.data());
+                file_data = boost::asio::buffer_cast<void*>(receive_buffer.data());
                 //cout << data << endl;
             }
             im = cv::imdecode(cv::Mat(1,file_size,CV_8UC1, file_data, sizeof(char)), cv::IMREAD_UNCHANGED);
