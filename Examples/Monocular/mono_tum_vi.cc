@@ -53,7 +53,6 @@ void send_(tcp::socket & socket, const string& message) {
 void LoadImages(const string &strImagePath, const string &strPathTimes,
                 vector<string> &vstrImages, vector<double> &vTimeStamps);
 
-void LoadImages()
 
 double ttrack_tot = 0;
 int main(int argc, char **argv)
@@ -87,23 +86,22 @@ int main(int argc, char **argv)
     nImages.resize(num_seq);
 
     int tot_images = 0;
+#ifndef SOCKET_PROGRAM
     for (seq = 0; seq<num_seq; seq++)
     {
-#ifndef SOCKET_PROGRAM
+
         cout << "Loading images for sequence " << seq << "...";
         LoadImages(string(argv[(2*seq)+3]), string(argv[(2*seq)+4]), vstrImageFilenames[seq], vTimestampsCam[seq]);
         cout << "LOADED!" << endl;
 
         nImages[seq] = vstrImageFilenames[seq].size();
-#endif
         tot_images += nImages[seq];
-#ifndef SOCKET_PROGRAM
         if((nImages[seq]<=0))
         {
             cerr << "ERROR: Failed to load images for sequence" << seq << endl;
             return 1;
         }
-#endif
+#endif //ifndef socket_program
 
     }
     // Vector for tracking time statistics
