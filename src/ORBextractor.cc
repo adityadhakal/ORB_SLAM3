@@ -854,6 +854,7 @@ int ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPoi
 }
 
 void ORBextractor::ComputePyramid(Mat image) {
+    cout<<"Compute pyramid called\n";
   if (mvImagePyramidAllocatedFlag == false) {
     // first frame, allocate the Pyramids
     for (int level = 0; level < nlevels; ++level) {

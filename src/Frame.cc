@@ -1138,6 +1138,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
 }
 
 void Frame::ComputeStereoFishEyeMatches() {
+    cout<<"Match Streo FishEye called\n";
     //Speed it up by matching keypoints in the lapping area
     vector<cv::KeyPoint> stereoLeft(mvKeys.begin() + monoLeft, mvKeys.end());
     vector<cv::KeyPoint> stereoRight(mvKeysRight.begin() + monoRight, mvKeysRight.end());

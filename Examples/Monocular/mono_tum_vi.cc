@@ -27,7 +27,7 @@
 
 //For use in sockets
 #include <boost/asio.hpp>
-#define SOCKET_PROGRAM
+//#define SOCKET_PROGRAM
 
 using namespace boost::asio;
 using ip::tcp;
