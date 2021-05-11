@@ -53,6 +53,8 @@ void send_(tcp::socket & socket, const string& message) {
 void LoadImages(const string &strImagePath, const string &strPathTimes,
                 vector<string> &vstrImages, vector<double> &vTimeStamps);
 
+void LoadImages()
+
 double ttrack_tot = 0;
 int main(int argc, char **argv)
 {
@@ -87,18 +89,21 @@ int main(int argc, char **argv)
     int tot_images = 0;
     for (seq = 0; seq<num_seq; seq++)
     {
+#ifndef SOCKET_PROGRAM
         cout << "Loading images for sequence " << seq << "...";
         LoadImages(string(argv[(2*seq)+3]), string(argv[(2*seq)+4]), vstrImageFilenames[seq], vTimestampsCam[seq]);
         cout << "LOADED!" << endl;
 
         nImages[seq] = vstrImageFilenames[seq].size();
+#endif
         tot_images += nImages[seq];
-
+#ifndef SOCKET_PROGRAM
         if((nImages[seq]<=0))
         {
             cerr << "ERROR: Failed to load images for sequence" << seq << endl;
             return 1;
         }
+#endif
 
     }
     // Vector for tracking time statistics
@@ -128,7 +133,8 @@ int main(int argc, char **argv)
         cv::Mat im;
         proccIm = 0;
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
-        for(int ni=0; ni<nImages[seq]; ni++, proccIm++)
+//        for(int ni=0; ni<nImages[seq]; ni++, proccIm++)
+        for(int ni = 0; ni<num_seq; ni++, proccIm++)
         {
 #ifdef SOCKET_PROGRAM
             //fetch a file from file server.
