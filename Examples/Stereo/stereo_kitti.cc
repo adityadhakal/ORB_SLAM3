@@ -89,6 +89,9 @@ int main(int argc, char **argv)
 
         vTimesTrack[ni]=ttrack;
 
+	//Aditya's timer
+	cout<<"---Time to track:"<<ttrack<<endl;
+
         // Wait to load the next frame
         double T=0;
         if(ni<nImages-1)

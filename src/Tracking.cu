@@ -3067,8 +3067,8 @@ __global__ void isInFrustumCUDA(Frame *thisFrame, MapPoint **pMPe, int num_point
 	        //const cv::Mat PO = P-mOw;
 	        //const float dist = cv::norm(PO);
 	        float dist = sqrtf(PO[0]*PO[0]+PO[1]*PO[1]+PO[2]*PO[2]);
-	        if((thisFrame->mnId%10) == 0)
-	        		printf("ID: %d dist: %f\n",thisFrame->mnId,dist);
+	        //if((thisFrame->mnId%10) == 0)
+	        //		printf("ID: %d dist: %f\n",thisFrame->mnId,dist);
 
 	        if(dist<minDistance || dist>maxDistance)
 	        	ans[idx]= false;
@@ -3164,7 +3164,7 @@ void Tracking::SearchLocalPoints()
     double agg = 0.0;
 
 #ifdef CUDA_ENABLED
-    
+    /*
     //write a GPU based function for mappoints rather than the loop
     int num_mapPoints = mvpLocalMapPoints.size();
     //let's make 2 warp blocks for now.
@@ -3240,7 +3240,7 @@ void Tracking::SearchLocalPoints()
     std::chrono::steady_clock::time_point end_proj_cuda = std::chrono::steady_clock::now();
     double t_p_project_cuda = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(end_proj_cuda- begin_proj2).count();
     std::cout<<"Local Tracking (point projection CUDA) time (ms): "<<t_p_project_cuda<<std::endl;
-    
+    */
 #endif //CUDA_ENABLED
     
     
@@ -3257,7 +3257,7 @@ void Tracking::SearchLocalPoints()
             continue;
         
         //--comment below while running GPU code
-        /*
+        
         // Project (this fills MapPoint variables for matching)
         if(mCurrentFrame.isInFrustum(pMP,0.5))
         {
@@ -3265,7 +3265,7 @@ void Tracking::SearchLocalPoints()
             nToMatch++;
             //cout<<"Track Scale Level: "<<pMP->mnTrackScaleLevel<<"pc_dist: "<<pMP->mTrackDepth<<" mnlogscalefactor "<<mCurrentFrame.mfLogScaleFactor<<" Trackviewcos"<<pMP->mTrackViewCos<<endl;
         }
-        */
+        
         //-- comment till here
         
         if(mCurrentFrame.answers[counter++])
