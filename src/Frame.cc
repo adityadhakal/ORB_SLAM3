@@ -810,6 +810,7 @@ void Frame::ComputeStereoMatches()
   double total_data_move = 0.0;
   double just_data_move_1 = 0.0;
   double just_data_move_2 = 0.0;
+    double just_data_move_3 = 0.0;
 
     mvuRight = vector<float>(N,-1.0f);
     mvDepth = vector<float>(N,-1.0f);
@@ -927,7 +928,7 @@ void Frame::ComputeStereoMatches()
             std::chrono::steady_clock::time_point time_endmove = std::chrono::steady_clock::now();
             double place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
             just_data_move_1 += place_holder;
-
+	    
             
             int bestDist = INT_MAX;
             int bestincR = 0;
@@ -951,13 +952,15 @@ void Frame::ComputeStereoMatches()
                 
                 //IR.convertTo(IR,CV_32F);
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
+		std::chrono::steady_clock::time_point time_startmove2 = std::chrono::steady_clock::now();
                 IR.convertTo(IR,CV_16S);
                 IR = IR - IR.at<short>(w,w);
 
                 time_endmove = std::chrono::steady_clock::now();
                 place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
                 just_data_move_2 += place_holder;
-
+		place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove2).count();
+		just_data_move_3 += place_holder;
 
                 float dist = cv::norm(IL,IR,cv::NORM_L1);
                 if(dist<bestDist)
@@ -1023,7 +1026,7 @@ void Frame::ComputeStereoMatches()
     cout<<"Time to move ORB data in CPU: "<<total_data_move<<" milli-sec"<<endl;
     cout<<"Just data move 1: "<<just_data_move_1<<" milli-sec"<<endl;
     cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<endl;
-
+    cout<<"Just data move 3: (just conversion) "<<just_data_move_3<<" milli-sec"<<endl;
 }
 
 
