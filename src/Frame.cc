@@ -810,7 +810,10 @@ void Frame::ComputeStereoMatches()
   double total_data_move = 0.0;
   double just_data_move_1 = 0.0;
   double just_data_move_2 = 0.0;
-    double just_data_move_3 = 0.0;
+  double just_data_move_3 = 0.0;
+  
+	    int counter = 0;
+
 
     mvuRight = vector<float>(N,-1.0f);
     mvDepth = vector<float>(N,-1.0f);
@@ -948,27 +951,37 @@ void Frame::ComputeStereoMatches()
                 //    cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 // aditya changed due to gpu mat
                 time_startmove = std::chrono::steady_clock::now();
+		counter++;
                 cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 //cv::cuda::GpuMat convertedMat;
-                gMat.convertTo(gMat,CV_16S);
-		      cout<<"Converted the mat in GPU: "<<endl;
-                cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
-                //cv::Mat IR(convertedMat.rows, convertedMat.cols, convertedMat.type(), convertedMat.data, convertedMat.step);
-		cout<<"Created the mat in CPU: "<<endl;
+                //gMat.convertTo(gMat,CV_16S);
+		//cout<<"Converted the mat in GPU: "<<endl;
+		
+		cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+		//cv::Mat IRtemp(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+
+		//cv::Mat IR;
+		//gMat.download(IR);
+		
+		//cout<<"Created the mat in CPU: "<<endl;
 				
                 
                 //IR.convertTo(IR,CV_32F);
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
+
 		std::chrono::steady_clock::time_point time_startmove2 = std::chrono::steady_clock::now();
-                //IR.convertTo(IR,CV_16S);
+		//cv::Mat IR;											  
+                IR.convertTo(IR,CV_16S);
+		
+
                 IR = IR - IR.at<short>(w,w);
-		cout<<"Operated the mat in CPU: "<<endl;
+		//cout<<"Operated the mat in CPU: "<<endl;
 
                 time_endmove = std::chrono::steady_clock::now();
                 place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
                 just_data_move_2 += place_holder;
-		        place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove2).count();
-		        just_data_move_3 += place_holder;
+		place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove2).count();
+		just_data_move_3 += place_holder;
 
                 float dist = cv::norm(IL,IR,cv::NORM_L1);
                 if(dist<bestDist)
@@ -1033,7 +1046,7 @@ void Frame::ComputeStereoMatches()
     
     cout<<"Time to move ORB data in CPU: "<<total_data_move<<" milli-sec"<<endl;
     cout<<"Just data move 1: "<<just_data_move_1<<" milli-sec"<<endl;
-    cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<endl;
+    cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<" "<<"Ran "<<counter<<endl;
     cout<<"Just data move 3: (just conversion) "<<just_data_move_3<<" milli-sec"<<endl;
 }
 
