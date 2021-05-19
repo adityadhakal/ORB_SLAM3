@@ -945,7 +945,7 @@ void Frame::ComputeStereoMatches()
                 continue;
 
             //extract the whole matrix into CPU before operating.
-            cv::cuda::GPUMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
+            cv::cuda::GpuMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
             cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
             IR_temp.convertTo(IR_temp,CV_16S);
 
