@@ -905,7 +905,11 @@ void Frame::ComputeStereoMatches()
             //change to accomodate GPU MAT
             //cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
             cv::cuda::GpuMat gMat = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
+            std::chrono::steady_clock::time_point time_startconvert = std::chrono::steady_clock::now();
             cv::Mat IL(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+            std::chrono::steady_clock::time_point time_endconvert = std::chrono::steady_clock::now();
+            double mTimedatamove = std::chrono::duration_cast<std::chrono::duration<double,std::micro> >(time_endconvert - time_startconvert).count();
+            cout<<"Time to move data from GPU to CPU: "<<mTimedatamove<<" micro-sec"<<endl;
             //IL.convertTo(IL,CV_32F);
             //IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
             IL.convertTo(IL,CV_16S);
