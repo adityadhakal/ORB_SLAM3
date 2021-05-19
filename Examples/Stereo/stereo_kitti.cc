@@ -89,15 +89,16 @@ int main(int argc, char **argv)
 
         vTimesTrack[ni]=ttrack;
 
-	//Aditya's timer
-	cout<<"---Time to track:"<<ttrack<<endl;
-
+	
         // Wait to load the next frame
         double T=0;
         if(ni<nImages-1)
             T = vTimestamps[ni+1]-tframe;
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
+
+//Aditya's timer
+    cout<<"---Time to track:"<<ttrack<< " Computer T: "<<T<<endl;
 
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
