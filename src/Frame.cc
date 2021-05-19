@@ -807,6 +807,7 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
 
 void Frame::ComputeStereoMatches()
 {
+  double total_data_move = 0.0;
     mvuRight = vector<float>(N,-1.0f);
     mvDepth = vector<float>(N,-1.0f);
 
@@ -842,6 +843,8 @@ void Frame::ComputeStereoMatches()
     // For each left keypoint search a match in the right image
     vector<pair<int, int> > vDistIdx;
     vDistIdx.reserve(N);
+
+
 
     for(int iL=0; iL<N; iL++)
     {
@@ -890,6 +893,8 @@ void Frame::ComputeStereoMatches()
             }
         }
 
+	std::chrono::steady_clock::time_point time_startconvert = std::chrono::steady_clock::now();
+
         // Subpixel match by correlation
         if(bestDist<thOrbDist)
         {
@@ -905,16 +910,16 @@ void Frame::ComputeStereoMatches()
             //change to accomodate GPU MAT
             //cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
             cv::cuda::GpuMat gMat = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
-            std::chrono::steady_clock::time_point time_startconvert = std::chrono::steady_clock::now();
+
             cv::Mat IL(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
-            std::chrono::steady_clock::time_point time_endconvert = std::chrono::steady_clock::now();
-            double mTimedatamove = std::chrono::duration_cast<std::chrono::duration<double,std::micro> >(time_endconvert - time_startconvert).count();
-            cout<<"Time to move data from GPU to CPU: "<<mTimedatamove<<" micro-sec"<<endl;
+
             //IL.convertTo(IL,CV_32F);
             //IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
             IL.convertTo(IL,CV_16S);
             IL = IL - IL.at<short>(w,w);
 
+
+            
             int bestDist = INT_MAX;
             int bestincR = 0;
             const int L = 5;
@@ -937,6 +942,7 @@ void Frame::ComputeStereoMatches()
                 IR.convertTo(IR,CV_16S);
                 IR = IR - IR.at<short>(w,w);
 
+
                 float dist = cv::norm(IL,IR,cv::NORM_L1);
                 if(dist<bestDist)
                 {
@@ -946,6 +952,7 @@ void Frame::ComputeStereoMatches()
 
                 vDists[L+incR] = dist;
             }
+
 
             if(bestincR==-L || bestincR==L)
                 continue;
@@ -976,7 +983,10 @@ void Frame::ComputeStereoMatches()
                 mvuRight[iL] = bestuR;
                 vDistIdx.push_back(pair<int,int>(bestDist,iL));
             }
-        }
+        }	
+	std::chrono::steady_clock::time_point time_endconvert = std::chrono::steady_clock::now();
+	double mTimedatamove = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endconvert - time_startconvert).count();
+	total_data_move += mTimedatamove;
     }
 
     sort(vDistIdx.begin(),vDistIdx.end());
@@ -993,6 +1003,9 @@ void Frame::ComputeStereoMatches()
             mvDepth[vDistIdx[i].second]=-1;
         }
     }
+    
+    cout<<"Time to move ORB data in CPU: "<<total_data_move<<" micro-sec"<<endl;
+
 }
 
 
