@@ -947,20 +947,23 @@ void Frame::ComputeStereoMatches()
                 // aditya changed due to gpu mat
                 time_startmove = std::chrono::steady_clock::now();
                 cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-                cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+                cv::cuda:GpuMat convertedMat;
+                gMat.convertTo(convertedMat,CV_16S);
+                //cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+                cv::Mat IR(convertedMat.rows, convertedMat.cols, convertedMat.type(), convertedMat.data, convertedMat.step);
 
                 
                 //IR.convertTo(IR,CV_32F);
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
-		std::chrono::steady_clock::time_point time_startmove2 = std::chrono::steady_clock::now();
-                IR.convertTo(IR,CV_16S);
+		      std::chrono::steady_clock::time_point time_startmove2 = std::chrono::steady_clock::now();
+                //IR.convertTo(IR,CV_16S);
                 IR = IR - IR.at<short>(w,w);
 
                 time_endmove = std::chrono::steady_clock::now();
                 place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
                 just_data_move_2 += place_holder;
-		place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove2).count();
-		just_data_move_3 += place_holder;
+		        place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove2).count();
+		        just_data_move_3 += place_holder;
 
                 float dist = cv::norm(IL,IR,cv::NORM_L1);
                 if(dist<bestDist)
