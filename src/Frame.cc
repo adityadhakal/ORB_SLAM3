@@ -808,6 +808,9 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
 void Frame::ComputeStereoMatches()
 {
   double total_data_move = 0.0;
+  double just_data_move_1 = 0.0;
+  double just_data_move_2 = 0.0;
+
     mvuRight = vector<float>(N,-1.0f);
     mvDepth = vector<float>(N,-1.0f);
 
@@ -907,11 +910,16 @@ void Frame::ComputeStereoMatches()
 
             // sliding window search
             const int w = 5;
+            std::chrono::steady_clock::time_point time_startmove = std::chrono::steady_clock::now();
+
             //change to accomodate GPU MAT
             //cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
             cv::cuda::GpuMat gMat = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
 
             cv::Mat IL(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+
+            std::chrono::steady_clock::time_point time_endmove = std::chrono::steady_clock::now();
+            just_data_move_1 += std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
 
             //IL.convertTo(IL,CV_32F);
             //IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
@@ -935,8 +943,12 @@ void Frame::ComputeStereoMatches()
             {
                 //    cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 // aditya changed due to gpu mat
+                time_startmove = std::chrono::steady_clock::now();
                 cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+
+                time_endmove = std::chrono::steady_clock::now();
+                just_data_move_2 += std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endmove - time_startmove).count();
                 //IR.convertTo(IR,CV_32F);
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
                 IR.convertTo(IR,CV_16S);
@@ -1004,7 +1016,9 @@ void Frame::ComputeStereoMatches()
         }
     }
     
-    cout<<"Time to move ORB data in CPU: "<<total_data_move<<" micro-sec"<<endl;
+    cout<<"Time to move ORB data in CPU: "<<total_data_move<<" milli-sec"<<endl;
+    cout<<"Just data move 1: "<<just_data_move_1<<" milli-sec"<<endl;
+    cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<endl;
 
 }
 
