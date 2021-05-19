@@ -944,7 +944,10 @@ void Frame::ComputeStereoMatches()
             if(iniu<0 || endu >= mpORBextractorRight->mvImagePyramid[kpL.octave].cols)
                 continue;
 
-            
+            //extract the whole matrix into CPU before operating.
+            cv::cuda::GPUMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
+            cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
+            IR_temp.convertTo(IR_temp,CV_16S);
 
             for(int incR=-L; incR<=+L; incR++)
             {
@@ -952,13 +955,18 @@ void Frame::ComputeStereoMatches()
                 // aditya changed due to gpu mat
                 time_startmove = std::chrono::steady_clock::now();
 		counter++;
-                cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
+            
+            //upcomment this   
+            // cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
+               cv::Mat IR = IR_temp.rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
+
                 //cv::cuda::GpuMat convertedMat;
                 //gMat.convertTo(gMat,CV_16S);
 		//cout<<"Converted the mat in GPU: "<<endl;
 		
-		cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
-		//cv::Mat IRtemp(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+        //uncomment this
+		//cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+		
 
 		//cv::Mat IR;
 		//gMat.download(IR);
@@ -970,8 +978,9 @@ void Frame::ComputeStereoMatches()
                 //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
 
 		std::chrono::steady_clock::time_point time_startmove2 = std::chrono::steady_clock::now();
-		//cv::Mat IR;											  
-                IR.convertTo(IR,CV_16S);
+		//cv::Mat IR;
+        //uncomment this	   										  
+        //IR.convertTo(IR,CV_16S);
 		
 
                 IR = IR - IR.at<short>(w,w);
