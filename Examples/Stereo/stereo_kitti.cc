@@ -100,8 +100,12 @@ int main(int argc, char **argv)
 //Aditya's timer
     cout<<"---Time to track:"<<ttrack<< " Computer T: "<<T<<endl;
 
+//Aditya: removing the sleep command
+/*
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
+
+*/
     }
 
     // Stop all threads
