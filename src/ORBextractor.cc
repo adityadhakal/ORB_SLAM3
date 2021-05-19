@@ -845,10 +845,10 @@ int ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPoi
         _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
         */
     }
-    cout << "[ORBextractor]: extracted " << _keypoints.size() << " KeyPoints" << endl;
+    //    cout << "[ORBextractor]: extracted " << _keypoints.size() << " KeyPoints" << endl;
     std::chrono::steady_clock::time_point time_end = std::chrono::steady_clock::now();
     double time_spent = std::chrono::duration_cast<std::chrono::duration<double,std::micro> >(time_end - time_begin).count();
-    cout<<"TIme spent ORB "<<time_spent<<endl;
+    cout<<"Time spent ORB "<<time_spent<<endl;
     return monoIndex;
     POP_RANGE;
 }
