@@ -947,11 +947,11 @@ void Frame::ComputeStereoMatches()
                 // aditya changed due to gpu mat
                 time_startmove = std::chrono::steady_clock::now();
                 cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-                cv::cuda::GpuMat convertedMat;
-                gMat.convertTo(convertedMat,CV_16S);
-		cout<<"Converted the mat in GPU: "<<endl;
-                //cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
-                cv::Mat IR(convertedMat.rows, convertedMat.cols, convertedMat.type(), convertedMat.data, convertedMat.step);
+                //cv::cuda::GpuMat convertedMat;
+                gMat.convertTo(gMat,CV_16S);
+		      cout<<"Converted the mat in GPU: "<<endl;
+                cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+                //cv::Mat IR(convertedMat.rows, convertedMat.cols, convertedMat.type(), convertedMat.data, convertedMat.step);
 		cout<<"Created the mat in CPU: "<<endl;
 				
                 
