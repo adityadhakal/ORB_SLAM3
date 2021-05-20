@@ -811,6 +811,7 @@ void Frame::ComputeStereoMatches()
   double just_data_move_1 = 0.0;
   double just_data_move_2 = 0.0;
   double just_data_move_3 = 0.0;
+  double just_data_move_4 = 0.0;
   
 	    int counter = 0;
 
@@ -900,7 +901,7 @@ void Frame::ComputeStereoMatches()
             }
         }
 
-	std::chrono::steady_clock::time_point time_startconvert = std::chrono::steady_clock::now();
+	   std::chrono::steady_clock::time_point time_startconvert = std::chrono::steady_clock::now();
 
         // Subpixel match by correlation
         if(bestDist<thOrbDist)
@@ -945,21 +946,26 @@ void Frame::ComputeStereoMatches()
                 continue;
 
             //extract the whole matrix into CPU before operating.
+            std::chrono::steady_clock::time_point time_move_big = std::chrono::steady_clock::now();
+
             cv::cuda::GpuMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
             cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
             IR_temp.convertTo(IR_temp,CV_16S);
-	    IR_temp = IR_temp - IR_temp.at<short>(w,w);
+	        IR_temp = IR_temp - IR_temp.at<short>(w,w);
+            std::chrono::steady_clock::time_point time_end_move_big = std::chrono::steady_clock::now();
+            place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_end_move_big - time_move_big).count();
+            just_data_move_4 += place_holder;
 
             for(int incR=-L; incR<=+L; incR++)
             {
                 //    cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
                 // aditya changed due to gpu mat
                 time_startmove = std::chrono::steady_clock::now();
-		counter++;
+                counter++;
             
-            //upcomment this   
-            // cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-               cv::Mat IR = IR_temp.rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
+                //upcomment this   
+                // cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
+                   cv::Mat IR = IR_temp.rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
 
                 //cv::cuda::GpuMat convertedMat;
                 //gMat.convertTo(gMat,CV_16S);
@@ -1058,6 +1064,7 @@ void Frame::ComputeStereoMatches()
     cout<<"Just data move 1: "<<just_data_move_1<<" milli-sec"<<endl;
     cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<" "<<"Ran "<<counter<<endl;
     cout<<"Just data move 3: (just conversion) "<<just_data_move_3<<" milli-sec"<<endl;
+    cout<<"Move data. Larger matrix "<<just_data_move_4<<"Milli0seconds"<<endl;
 }
 
 
