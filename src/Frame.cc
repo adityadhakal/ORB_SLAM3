@@ -853,8 +853,12 @@ void Frame::ComputeStereoMatches()
     vDistIdx.reserve(N);
 
 
+    //mass movement of data
+    std::chrono::steady_clock::time_point time_start_mass = std::chrono::steady_clock::now();
+
     //cout<<"N: Size of first loop "<<N<<endl;
     //make an octave of pyramid and load the RIght image's pyramid from GPU
+
     cv::cuda::GpuMat rMat[8];
     cv::Mat rMatCpu[8]; //cpu side mat
     //fill the Rmat with GPU mat.
@@ -869,6 +873,10 @@ void Frame::ComputeStereoMatches()
 
         //conversion complete
     }
+    std::chrono::steady_clock::time_point time_end_mass = std::chrono::steady_clock::now();
+    double mass_move = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_end_mass - time_start_mass).count();
+    cout<<"Time to Mass move all the octaves: "<<mass_move<<" milliseconds"<<endl;
+
 
     for(int iL=0; iL<N; iL++)
     {
