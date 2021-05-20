@@ -853,6 +853,7 @@ void Frame::ComputeStereoMatches()
     vDistIdx.reserve(N);
 
 
+    cout<<"N: Size of first loop "<<N<<endl;
 
     for(int iL=0; iL<N; iL++)
     {
@@ -953,6 +954,7 @@ void Frame::ComputeStereoMatches()
             IR_temp.convertTo(IR_temp,CV_16S);
 	        IR_temp = IR_temp - IR_temp.at<short>(w,w);
             std::chrono::steady_clock::time_point time_end_move_big = std::chrono::steady_clock::now();
+            place_holder = 0.0;
             place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_end_move_big - time_move_big).count();
             just_data_move_4 += place_holder;
 
