@@ -857,10 +857,14 @@ void Frame::ComputeStereoMatches()
 
     for(int iL=0; iL<N; iL++)
     {
+
         const cv::KeyPoint &kpL = mvKeys[iL];
         const int &levelL = kpL.octave;
         const float &vL = kpL.pt.y;
         const float &uL = kpL.pt.x;
+
+        cout<<"kpL.octave "<<kpL.octave<<endl;
+
 
         const vector<size_t> &vCandidates = vRowIndices[vL];
 
