@@ -855,6 +855,10 @@ void Frame::ComputeStereoMatches()
 
     //cout<<"N: Size of first loop "<<N<<endl;
     //make an octave of pyramid and load the RIght image's pyramid from GPU
+    
+    // sliding window search
+    const int w = 5;
+
     cv::cuda::GpuMat rMat[8];
     cv::Mat rMatCpu[8]; //cpu side mat
     //fill the Rmat with GPU mat.
@@ -933,8 +937,6 @@ void Frame::ComputeStereoMatches()
             const float scaledvL = std::round(kpL.pt.y*scaleFactor);
             const float scaleduR0 = std::round(uR0*scaleFactor);
 
-            // sliding window search
-            const int w = 5;
             std::chrono::steady_clock::time_point time_startmove = std::chrono::steady_clock::now();
 
             //change to accomodate GPU MAT
