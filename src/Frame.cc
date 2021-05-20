@@ -948,6 +948,7 @@ void Frame::ComputeStereoMatches()
             cv::cuda::GpuMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
             cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
             IR_temp.convertTo(IR_temp,CV_16S);
+	    IR_temp = IR_temp - IR_temp.at<short>(w,w);
 
             for(int incR=-L; incR<=+L; incR++)
             {
@@ -982,8 +983,8 @@ void Frame::ComputeStereoMatches()
         //uncomment this	   										  
         //IR.convertTo(IR,CV_16S);
 		
-
-                IR = IR - IR.at<short>(w,w);
+		//uncomment this
+                //IR = IR - IR.at<short>(w,w);
 		//cout<<"Operated the mat in CPU: "<<endl;
 
                 time_endmove = std::chrono::steady_clock::now();
