@@ -56,6 +56,8 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat imLeft, imRight;
+    int counter = 0;
+    double time_taken = 0.0;
     for(int ni=0; ni<nImages; ni++)
     {
         // Read left and right images from file
@@ -98,7 +100,11 @@ int main(int argc, char **argv)
             T = tframe-vTimestamps[ni-1];
 
 //Aditya's timer
-    cout<<"---Time to track:"<<ttrack<< " Computer T: "<<T<<endl;
+        
+        time_taken += ttrack;
+        counter++;
+        cout<<"---Time to track:"<<ttrack<< " Computer T: "<<T<<endl;
+        cout<<"Average time:----- "<<time_taken/counter<<endl;
 
 //Aditya: removing the sleep command
 /*

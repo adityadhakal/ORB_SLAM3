@@ -326,7 +326,7 @@ void Tracking::PrintTimeStats()
     // Local Map Tracking complexity
     std::cout << "---------------------------" << std::endl;
     std::cout << std::endl << "Local Map Tracking complexity (mean$\\pm$std)" << std::endl;
-    f << "---------------------------" << std::endl;
+    f << "-----------------------" << std::endl;
     f << std::endl << "Local Map Tracking complexity (mean$\\pm$std)" << std::endl;
 
     average = calcAverage(vnKeyFramesLM);
