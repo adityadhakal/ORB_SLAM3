@@ -853,7 +853,22 @@ void Frame::ComputeStereoMatches()
     vDistIdx.reserve(N);
 
 
-    cout<<"N: Size of first loop "<<N<<endl;
+    //cout<<"N: Size of first loop "<<N<<endl;
+    //make an octave of pyramid and load the RIght image's pyramid from GPU
+    cv::cuda::GpuMat rMat[8];
+    cv::Mat rMatCpu[8]; //cpu side mat
+    //fill the Rmat with GPU mat.
+    for(int i = 0; i < 8 ; i++)
+    {
+        rMat[i] = mpORBextractorRight->mvImagePyramid[i];
+        //convert the matrix to CPU side
+        cv::Mat cpuMat(rMat[i].rows, rMat[i].cols, rMat[i].type(), rMat[i].data, rMat[i].step);
+        cpuMat.convertTo(cpuMat,CV_16S);
+        cpuMat = cpuMat - cpuMat.at<short>(w,w);
+        rMatCpu[i] = cpuMat;
+
+        //conversion complete
+    }
 
     for(int iL=0; iL<N; iL++)
     {
@@ -863,7 +878,7 @@ void Frame::ComputeStereoMatches()
         const float &vL = kpL.pt.y;
         const float &uL = kpL.pt.x;
 
-        cout<<"kpL.octave "<<kpL.octave<<endl;
+        //cout<<"kpL.octave "<<kpL.octave<<endl;
 
 
         const vector<size_t> &vCandidates = vRowIndices[vL];
@@ -953,10 +968,12 @@ void Frame::ComputeStereoMatches()
             //extract the whole matrix into CPU before operating.
             std::chrono::steady_clock::time_point time_move_big = std::chrono::steady_clock::now();
 
-            cv::cuda::GpuMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
-            cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
-            IR_temp.convertTo(IR_temp,CV_16S);
-	        IR_temp = IR_temp - IR_temp.at<short>(w,w);
+            //cv::cuda::GpuMat all_mat = mpORBextractorRight->mvImagePyramid[kpL.octave];
+            //cv::Mat IR_temp(all_mat.rows,all_mat.cols, all_mat.type(), all_mat.data,all_mat.step);
+            cv::Mat IR_temp = rMatCpu[kpL.octave];
+
+            //IR_temp.convertTo(IR_temp,CV_16S);
+	        //IR_temp = IR_temp - IR_temp.at<short>(w,w);
             std::chrono::steady_clock::time_point time_end_move_big = std::chrono::steady_clock::now();
             place_holder = 0.0;
             place_holder = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_end_move_big - time_move_big).count();
