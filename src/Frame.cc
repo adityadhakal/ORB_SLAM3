@@ -809,6 +809,9 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
 
 void Frame::ComputeStereoMatches()
 {
+
+    //mass movement of data
+    std::chrono::steady_clock::time_point time_start_func = std::chrono::steady_clock::now();
   double total_data_move = 0.0;
   double just_data_move_1 = 0.0;
   double just_data_move_2 = 0.0;
@@ -1119,12 +1122,15 @@ void Frame::ComputeStereoMatches()
             mvDepth[vDistIdx[i].second]=-1;
         }
     }
+    std::chrono::steady_clock::time_point time_endall = std::chrono::steady_clock::now();
+    double mAlltime = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_endall - time_start_func).count();
     
     cout<<"Time to move ORB data in CPU: "<<total_data_move<<" milli-sec"<<endl;
     cout<<"Just data move 1: "<<just_data_move_1<<" milli-sec"<<endl;
     cout<<"Just data move 2: "<<just_data_move_2<<" milli-sec"<<" "<<"Ran "<<counter<<endl;
     cout<<"Just data move 3: (just conversion) "<<just_data_move_3<<" milli-sec"<<endl;
     cout<<"Move data. Larger matrix "<<just_data_move_4<<"Milli0seconds"<<endl;
+    cout<<"All function time spent "<<mAlltime<<" milliseconds"<<endl;
 }
 
 
