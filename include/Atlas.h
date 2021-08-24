@@ -58,11 +58,12 @@ public:
    //in managed shared memory segments
    typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
    MapAllocator alloc_inst;
-
-   bool compareMap(Map *p1, Map *p2)
+   struct cmp{
+   bool operator() (Map *p1, Map *p2) const
         {
             return (p1->GetId()>p2->GetId());
         }
+    };
 
 
     void CreateNewMap();
@@ -137,7 +138,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map>, decltype(&compareMap), MapAllocator > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>, cmp, MapAllocator > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
