@@ -138,7 +138,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map>, cmp, boost::interprocess::allocator<Map> > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>, cmp, boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
