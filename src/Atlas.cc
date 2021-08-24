@@ -44,7 +44,7 @@ Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,seg
     mpCurrentMap = 0;
     std::pair<int *,std::size_t> ret = ORB_SLAM3::segment.find<int>("magic-num");
     processnum = *ret.first;
-    
+
     CreateNewMap();
 }
 
@@ -75,8 +75,10 @@ void Atlas::CreateNewMap()
     //segment = &segment_mem;
     //Atlas *mpAtlas = (*segment).find<Atlas>("Atlas")().first;
     
-    cout<<"In create New Map()"<<endl;
-    unique_lock<mutex> lock(mMutexAtlas);
+    cout<<"In create New Map(). Create lock has been disabled."<<endl;
+    // do we need to lock atlas to create new map?
+    //unique_lock<mutex> lock(mMutexAtlas);
+
     
     
     //cout << "Creation of new map with id: " << Map::nNextId << endl;
@@ -308,6 +310,7 @@ boost::interprocess::offset_ptr<Map>  Atlas::GetCurrentMap()
     //boost::interprocess::managed_shared_memory segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240);
     //Atlas *atl = segment->find_or_construct<Atlas>("Atlas")();
 
+    // do we need to lock atlas to create new map?
     unique_lock<mutex> lock(mMutexAtlas);
     
     //previous code to give map. just gives default map
