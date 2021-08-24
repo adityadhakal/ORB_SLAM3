@@ -137,7 +137,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map>, compareMap, MapAllocator > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>, decltype(&compareMap), MapAllocator > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
