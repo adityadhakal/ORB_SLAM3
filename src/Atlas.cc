@@ -156,7 +156,7 @@ else{
 
     std::cout<<"Set the segment part CreateNewMap\n";
 
-    mspMaps->insert(mpCurrentMap);
+    mspMaps->insert(mpCurrentMap.get());
     std::cout<<"mspMaps->insert passed. CreateNewMap\n";
 }
 
