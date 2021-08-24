@@ -47,6 +47,12 @@ class Pinhole;
 
 class Atlas
 {
+    struct Compare{
+        bool operator ()(Map *p1, Map *p2)
+        {
+            return (p1.mnId>p2.mnId);
+        }
+    };
 
 public:
     Atlas();
@@ -132,7 +138,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map>, std::less<Map*>, MapAllocator > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>, Compare, MapAllocator > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
