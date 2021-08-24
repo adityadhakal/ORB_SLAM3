@@ -29,17 +29,19 @@ namespace ORB_SLAM3
 
 
 
-Atlas::Atlas(): alloc_inst(ORB_SLAM3::segment.get_segment_manager()){
+Atlas::Atlas(){
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
     a = 10;
     b = 25;
 }
 
-Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false), alloc_inst(ORB_SLAM3::segment.get_segment_manager())//,segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240), a(10), b(25)
+Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240), a(10), b(25)
 {
 
     std::cout<<"Atlas initialized:"<<std::endl;
+
+    myalloc alloc_inst(ORB_SLAM3::segment.get_segment_manager());
  
     //Initialize the shared memory STL-compatible allocator
     //boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
