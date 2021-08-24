@@ -152,6 +152,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     else{
         std::cout<<"Atlas EXISTED!! Using the same Atlas."<<std::endl;
+        mpAtlas->processnum=*magic_num;
     }
     mpAtlas->segment = &segment;
     //mpAtlas->processnum = *magic_num;
