@@ -29,7 +29,7 @@ namespace ORB_SLAM3
 
 
 
-Atlas::Atlas(): alloc_inst(ORB_SLAM3::segment.get_segment_manager()){
+Atlas::Atlas(){
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
     a = 10;
