@@ -136,15 +136,15 @@ public:
 
     //process num
     int processnum;
-     typedef boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> myalloc;
-     myalloc alloc_inst;
+    typedef boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> myalloc;
+    myalloc alloc_inst;
 
 protected:
    
     std::set<boost::interprocess::offset_ptr<Map>, cmp, myalloc > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
-    Map* mpCurrentMap;
+    boost::interprocess::offset_ptr<Map> mpCurrentMap;
 
     std::vector<GeometricCamera*> mvpCameras;
     std::vector<KannalaBrandt8*> mvpBackupCamKan;
