@@ -136,9 +136,11 @@ public:
 
     //process num
     int processnum;
+     typedef boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> myalloc;
+     myalloc alloc_inst;
 
 protected:
-    typedef boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> myalloc;
+   
     std::set<boost::interprocess::offset_ptr<Map>, cmp, myalloc > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;

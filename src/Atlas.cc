@@ -29,20 +29,20 @@ namespace ORB_SLAM3
 
 
 
-Atlas::Atlas(){
+Atlas::Atlas(): alloc_inst(ORB_SLAM3::segment.get_segment_manager()){
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
     a = 10;
     b = 25;
 }
 
-Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240), a(10), b(25)
+Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false), alloc_inst(ORB_SLAM3::segment.get_segment_manager())//,segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240), a(10), b(25)
 {
 
     std::cout<<"Atlas initialized:"<<std::endl;
  
     //Initialize the shared memory STL-compatible allocator
-     boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
+    //boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
     std::pair<int *,std::size_t> ret = ORB_SLAM3::segment.find<int>("magic-num");
