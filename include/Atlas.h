@@ -56,7 +56,7 @@ public:
    //Alias an STL compatible allocator of for the map.
    //This allocator will allow to place containers
    //in managed shared memory segments
-   typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::boost::interprocess::segment_manager> MapAllocator;
+   typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
 
 
 
