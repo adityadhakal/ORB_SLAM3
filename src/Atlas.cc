@@ -42,6 +42,8 @@ Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,seg
     std::cout<<"Atlas initialized:"<<std::endl;
 
     myalloc alloc_inst(ORB_SLAM3::segment.get_segment_manager());
+
+    mspMaps = ORB_SLAM3::segment.construct<std::set>("mspMaps")(cmp,alloc_inst);
  
     //Initialize the shared memory STL-compatible allocator
     //boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
