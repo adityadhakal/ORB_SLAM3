@@ -132,7 +132,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map>,std::less<int>(),alloc_inst > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>, std::less<Map>, MapAllocator > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
