@@ -50,7 +50,7 @@ class Atlas
     struct Compare{
         bool operator ()(Map *p1, Map *p2)
         {
-            return (p1.mnId>p2.mnId);
+            return (p1->mnId>p2->mnId);
         }
     };
 
