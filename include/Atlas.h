@@ -59,7 +59,7 @@ public:
    typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
    MapAllocator alloc_inst;
    struct cmp{
-   bool operator() (Map *p1, Map *p2) const
+   bool operator() (boost::interprocess::offset_ptr<Map> p1, boost::interprocess::offset_ptr<Map> p2) const
         {
             return (p1->GetId()>p2->GetId());
         }
