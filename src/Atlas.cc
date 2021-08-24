@@ -452,7 +452,7 @@ long unsigned int Atlas::GetNumLivedKF()
 {
     unique_lock<mutex> lock(mMutexAtlas);
     long unsigned int num = 0;
-    for(boost::interprocess::offset_ptr<Map>  mMAPi : mspMaps)
+    for(boost::interprocess::offset_ptr<Map>  mMAPi : *mspMaps)
     {
         num += mMAPi->GetAllKeyFrames().size();
     }
@@ -463,7 +463,7 @@ long unsigned int Atlas::GetNumLivedKF()
 long unsigned int Atlas::GetNumLivedMP() {
     unique_lock<mutex> lock(mMutexAtlas);
     long unsigned int num = 0;
-    for (boost::interprocess::offset_ptr<Map> mMAPi : mspMaps) {
+    for (boost::interprocess::offset_ptr<Map> mMAPi : *mspMaps) {
         num += mMAPi->GetAllMapPoints().size();
     }
 
