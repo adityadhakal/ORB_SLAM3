@@ -27,7 +27,6 @@
 namespace ORB_SLAM3
 {
 
-typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
 
 
 Atlas::Atlas(): alloc_inst(ORB_SLAM3::segment.get_segment_manager()){
@@ -43,7 +42,7 @@ Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,seg
     std::cout<<"Atlas initialized:"<<std::endl;
  
     //Initialize the shared memory STL-compatible allocator
-    MapAllocator alloc_inst(ORB_SLAM3::segment.get_segment_manager());
+     boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
     std::pair<int *,std::size_t> ret = ORB_SLAM3::segment.find<int>("magic-num");
