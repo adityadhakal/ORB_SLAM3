@@ -146,7 +146,10 @@ else{
     //example
     currentMapPtr = mpCurrentMap;
 
+    std::cout<<"Set the segment part CreateNewMap\n";
+
     mspMaps.insert(mpCurrentMap);
+    std::cout<<"mspMaps.insert passed. CreateNewMap\n";
 }
 
 void Atlas::ChangeMap(boost::interprocess::offset_ptr<Map>  pMap)
