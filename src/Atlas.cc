@@ -57,7 +57,7 @@ Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,seg
 
 Atlas::~Atlas()
 {
-    for(std::set<boost::interprocess::offset_ptr<Map> >::iterator it = mspMaps.begin(), end = mspMaps.end(); it != end;)
+    for(std::set<boost::interprocess::offset_ptr<Map> >::iterator it = mspMaps->begin(), end = mspMaps->end(); it != end;)
     {
         boost::interprocess::offset_ptr<Map>  pMi = *it;
 
@@ -66,7 +66,7 @@ Atlas::~Atlas()
             delete pMi.get();
             pMi = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
 
-            it = mspMaps.erase(it);
+            it = mspMaps->erase(it);
         }
         else
             ++it;
@@ -91,7 +91,7 @@ void Atlas::CreateNewMap()
     //cout << "Creation of new map with id: " << Map::nNextId << endl;
     if(mpCurrentMap){
         cout << "Exits current map " << endl;
-        if(!mspMaps.empty() && mnLastInitKFidMap < mpCurrentMap->GetMaxKFid())
+        if(!mspMaps->empty() && mnLastInitKFidMap < mpCurrentMap->GetMaxKFid())
             mnLastInitKFidMap = mpCurrentMap->GetMaxKFid()+1; //The init KF is the next of current maximum
 
         mpCurrentMap->SetStoredMap();
@@ -155,8 +155,8 @@ else{
 
     std::cout<<"Set the segment part CreateNewMap\n";
 
-    mspMaps.insert(mpCurrentMap);
-    std::cout<<"mspMaps.insert passed. CreateNewMap\n";
+    mspMaps->insert(mpCurrentMap);
+    std::cout<<"mspMaps->insert passed. CreateNewMap\n";
 }
 
 void Atlas::ChangeMap(boost::interprocess::offset_ptr<Map>  pMap)
@@ -282,7 +282,7 @@ vector<boost::interprocess::offset_ptr<Map> > Atlas::GetAllMaps()
             return elem1->GetId() < elem2->GetId();
         }
     };
-    vector<boost::interprocess::offset_ptr<Map> > vMaps(mspMaps.begin(),mspMaps.end());
+    vector<boost::interprocess::offset_ptr<Map> > vMaps(mspMaps->begin(),mspMaps->end());
     sort(vMaps.begin(), vMaps.end(), compFunctor());
     return vMaps;
 }
@@ -290,7 +290,7 @@ vector<boost::interprocess::offset_ptr<Map> > Atlas::GetAllMaps()
 int Atlas::CountMaps()
 {
     unique_lock<mutex> lock(mMutexAtlas);
-    return mspMaps.size();
+    return mspMaps->size();
 }
 
 void Atlas::clearMap()
@@ -302,12 +302,12 @@ void Atlas::clearMap()
 void Atlas::clearAtlas()
 {
     unique_lock<mutex> lock(mMutexAtlas);
-    /*for(std::set<boost::interprocess::offset_ptr<Map> >::iterator it=mspMaps.begin(), send=mspMaps.end(); it!=send; it++)
+    /*for(std::set<boost::interprocess::offset_ptr<Map> >::iterator it=mspMaps->begin(), send=mspMaps->end(); it!=send; it++)
     {
         (*it)->clear();
         delete *it;
     }*/
-    mspMaps.clear();
+    mspMaps->clear();
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     //Aditya
     mpCurrentMap = NULL;
@@ -378,7 +378,7 @@ boost::interprocess::offset_ptr<Map>  Atlas::GetCurrentMap()
 
 void Atlas::SetMapBad(boost::interprocess::offset_ptr<Map>  pMap)
 {
-    mspMaps.erase(pMap);
+    mspMaps->erase(pMap);
     pMap->SetBad();
 
     mspBadMaps.insert(pMap);
