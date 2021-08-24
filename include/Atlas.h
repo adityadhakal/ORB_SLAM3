@@ -45,7 +45,6 @@ class Frame;
 class KannalaBrandt8;
 class Pinhole;
 
-typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
 
 class Atlas
 {

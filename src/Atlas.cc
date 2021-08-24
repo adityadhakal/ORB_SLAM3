@@ -27,6 +27,9 @@
 namespace ORB_SLAM3
 {
 
+typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
+
+
 Atlas::Atlas(): alloc_inst(ORB_SLAM3::segment.get_segment_manager()){
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
