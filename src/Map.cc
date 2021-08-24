@@ -232,6 +232,7 @@ boost::interprocess::offset_ptr<KeyFrame> Map::GetOriginKF()
 
 void Map::SetCurrentMap()
 {
+    std::cout<<"Changing the current map. SetCurrentMap()\n";
     mIsInUse = true;
 }
 
