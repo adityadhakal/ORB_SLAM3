@@ -57,7 +57,7 @@ public:
    //This allocator will allow to place containers
    //in managed shared memory segments
    typedef boost::interprocess::allocator<Map, boost::interprocess::managed_shared_memory::segment_manager> MapAllocator;
-
+   MapAllocator alloc_inst;
 
 
     void CreateNewMap();
@@ -132,7 +132,7 @@ public:
 
 protected:
 
-    std::set<boost::interprocess::offset_ptr<Map> > mspMaps;
+    std::set<boost::interprocess::offset_ptr<Map>,std::less<int>(),alloc_inst > mspMaps;
     std::set<boost::interprocess::offset_ptr<Map> > mspBadMaps;
     //boost::interprocess::offset_ptr<Map>  mpCurrentMap;
     Map* mpCurrentMap;
