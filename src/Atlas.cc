@@ -78,6 +78,7 @@ Atlas::~Atlas()
 
 void Atlas::CreateNewMap()
 {
+    //empty
     //boost::interprocess::managed_shared_memory segment(boost::interprocess::open_or_create, "MySharedMemory",10737418240);
     //std::string name_map = "Map";
     //segment = &segment_mem;
