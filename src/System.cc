@@ -149,8 +149,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     atlasname[6] = '\0';
 
     std::cout<<"Process num in System "<<*magic_num<<std::endl;
-    sprintf(&atlasname[3],"%d",*magic_num);
-
+    sprintf(&atlasname[5],"%d",*magic_num);
+    std::cout<<"Atlas Name is: "<<atlasname<<std::endl;
 
     //Create the Atlas
     //mpAtlas = new Atlas(0);
