@@ -144,7 +144,9 @@ else{
     sprintf(&mapname[3],"%d",processnum);
     std::cout<<"MapName in create map: "<<mapname<<std::endl;
     //mpCurrentMap = ORB_SLAM3::segment.find_or_construct<Map>(mapname) (mnLastInitKFidMap);
-    mpCurrentMap = ORB_SLAM3::segment.construct<Map>(mapname) (mnLastInitKFidMap);
+    //mpCurrentMap = ORB_SLAM3::segment.construct<Map>(mapname) (mnLastInitKFidMap);
+
+    mpCurrentMap = ORB_SLAM3::segment.construct<Map>("map") (mnLastInitKFidMap);
     cout<<"Created Map object in shared memory! Address is: "<<mpCurrentMap<<endl;
     cout<<"Reading a variable there "<<mpCurrentMap->GetMaxKFid()<<endl;
 
