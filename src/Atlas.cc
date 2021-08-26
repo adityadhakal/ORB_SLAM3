@@ -85,7 +85,7 @@ void Atlas::CreateNewMap()
     
     cout<<"In create New Map(). Create lock has been disabled."<<endl;
     // do we need to lock atlas to create new map?
-    //unique_lock<mutex> lock(mMutexAtlas);
+    unique_lock<mutex> lock(mMutexAtlas);
 
     
     
