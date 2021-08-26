@@ -50,9 +50,6 @@ Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)//,seg
     //boost::interprocess::allocator<boost::interprocess::offset_ptr<Map>, boost::interprocess::managed_shared_memory::segment_manager> alloc_inst(ORB_SLAM3::segment.get_segment_manager());
     //mpCurrentMap = static_cast<boost::interprocess::offset_ptr<Map> >(NULL);
     mpCurrentMap = 0;
-    std::pair<int *,std::size_t> ret = ORB_SLAM3::segment.find<int>("magic-num");
-    processnum = *ret.first;
-
     CreateNewMap();
 }
 
@@ -147,7 +144,8 @@ else{
     //mpCurrentMap = ORB_SLAM3::segment.find_or_construct<Map>(mapname) (mnLastInitKFidMap);
     //mpCurrentMap = ORB_SLAM3::segment.construct<Map>(mapname) (mnLastInitKFidMap);
 
-    mpCurrentMap = ORB_SLAM3::segment.construct<Map>("map") (mnLastInitKFidMap);
+    //mpCurrentMap = ORB_SLAM3::segment.construct<Map>("map") (mnLastInitKFidMap);
+    mpCurrentMap = ORB_SLAM3::segment.find_or_construct<Map>(mapname) (mnLastInitKFidMap);
     cout<<"Created Map object in shared memory! Address is: "<<mpCurrentMap<<endl;
     cout<<"Reading a variable there "<<mpCurrentMap->GetMaxKFid()<<endl;
 
