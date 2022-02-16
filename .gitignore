@@ -49,3 +49,4 @@ cmake-build-debug/
 *.pyc
 *.osa
 *.nvvp
+*.txt
