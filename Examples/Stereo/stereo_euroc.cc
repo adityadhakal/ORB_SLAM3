@@ -250,7 +250,7 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
     int counter = 0;
-    int skip = 200;
+    int skip = 100;
     while(!fTimes.eof())
     {
         string s;
