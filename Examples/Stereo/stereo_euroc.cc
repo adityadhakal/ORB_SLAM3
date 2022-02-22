@@ -249,20 +249,27 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+    int counter = 0;
+    int skipper = 300;
     while(!fTimes.eof())
     {
         string s;
         getline(fTimes,s);
-        if(!s.empty())
-        {
-            stringstream ss;
-            ss << s;
-            vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
-            vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
-            double t;
-            ss >> t;
-            vTimeStamps.push_back(t/1e9);
 
-        }
+        //if((counter++)%skipper){
+
+            if(!s.empty())
+            {
+                stringstream ss;
+                ss << s;
+                vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
+                vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
+                double t;
+                ss >> t;
+                vTimeStamps.push_back(t/1e9);
+            }
+        //}
+        //else
+        //    std::cout<<"SKIPPED!! "<<counter<<std::endl;
     }
 }
