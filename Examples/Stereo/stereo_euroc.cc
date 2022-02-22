@@ -249,11 +249,13 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+    int counter = 0;
+    int skip = 300;
     while(!fTimes.eof())
     {
         string s;
         getline(fTimes,s);
-        if(!s.empty())
+        if(!s.empty() && (counter%skip!=0))
         {
             stringstream ss;
             ss << s;
@@ -264,5 +266,9 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
             vTimeStamps.push_back(t/1e9);
 
         }
+        else{
+            std::cout<<"SKIPPED\n";
+        }
+        counter++;
     }
 }

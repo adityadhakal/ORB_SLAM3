@@ -143,10 +143,10 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 ss >> t;
                 vTimestamps.push_back(t);
             }
-    }
-    else
-        std::cout<<"SKIPPED\n";
-    
+        }
+        else
+            std::cout<<"SKIPPED\n";
+
         counter++;
     
     }
