@@ -128,18 +128,27 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     ifstream fTimes;
     string strPathTimeFile = strPathToSequence + "/times.txt";
     fTimes.open(strPathTimeFile.c_str());
+    int counter = 0;
+    int skip = 300; //skip one in 300
     while(!fTimes.eof())
     {
-        string s;
-        getline(fTimes,s);
-        if(!s.empty())
-        {
-            stringstream ss;
-            ss << s;
-            double t;
-            ss >> t;
-            vTimestamps.push_back(t);
-        }
+        if(counter%skip != 0){
+            string s;
+            getline(fTimes,s);
+            if(!s.empty())
+            {
+                stringstream ss;
+                ss << s;
+                double t;
+                ss >> t;
+                vTimestamps.push_back(t);
+            }
+    }
+    else
+        std::cout<<"SKIPPED\n";
+    
+        counter++;
+    
     }
 
     string strPrefixLeft = strPathToSequence + "/image_0/";
@@ -151,9 +160,11 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
 
     for(int i=0; i<nTimes; i++)
     {
-        stringstream ss;
-        ss << setfill('0') << setw(6) << i;
-        vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
-        vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
-    }
+        if(i%skip !=0){
+            stringstream ss;
+            ss << setfill('0') << setw(6) << i;
+            vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
+            vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
+        }
+    }   
 }
