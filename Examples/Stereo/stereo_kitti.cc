@@ -132,34 +132,33 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     int skip = 300; //skip one in 300
     while(!fTimes.eof())
     {
-        if(counter%skip != 0){
-            string s;
-            getline(fTimes,s);
-            if(!s.empty())
-            {
-                stringstream ss;
-                ss << s;
-                double t;
-                ss >> t;
+        string s;
+        getline(fTimes,s);
+        if(!s.empty())
+        {
+            stringstream ss;
+            ss << s;
+            double t;
+            ss >> t;
+            if(counter%skip != 0){
                 vTimestamps.push_back(t);
             }
+            else
+                std::cout<<"SKIPPED\n";
         }
-        else
-            std::cout<<"SKIPPED\n";
-
         counter++;
-    
+
     }
 
     string strPrefixLeft = strPathToSequence + "/image_0/";
     string strPrefixRight = strPathToSequence + "/image_1/";
 
-    //const int nTimes = vTimestamps.size();
-    const int nTimes = counter;
+    const int nTimes = vTimestamps.size();
+    const int nTimes_loop = counter;
     vstrImageLeft.resize(nTimes);
     vstrImageRight.resize(nTimes);
 
-    for(int i=0; i<nTimes; i++)
+    for(int i=0; i<nTimes_loop; i++)
     {
         if(i%skip !=0){
             stringstream ss;
