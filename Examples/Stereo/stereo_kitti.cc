@@ -154,7 +154,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     string strPrefixLeft = strPathToSequence + "/image_0/";
     string strPrefixRight = strPathToSequence + "/image_1/";
 
-    const int nTimes = vTimestamps.size();
+    //const int nTimes = vTimestamps.size();
+    const int nTimes = counter;
     vstrImageLeft.resize(nTimes);
     vstrImageRight.resize(nTimes);
 
