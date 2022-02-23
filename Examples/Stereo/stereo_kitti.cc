@@ -159,15 +159,20 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     vstrImageRight.resize(nTimes);
 
     std::cout<<"---- Before getting in the loop \n";
-
+    int new_counter = 0;
     for(int i=0; i<nTimes_loop; i++)
     {
         if(i%skip !=0){
             stringstream ss;
+            /*
             ss << setfill('0') << setw(6) << i;
             vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
             vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
-            std::cout<<"i: "<<i<<std::endl;
+            */
+            ss << setfill('0') << setw(6) << i;
+            vstrImageLeft[new_counter] = strPrefixLeft + ss.str() + ".png";
+            vstrImageRight[new_counter] = strPrefixRight + ss.str() + ".png";
+            newcounter++;
         }
 
     }   
