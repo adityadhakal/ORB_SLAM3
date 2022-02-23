@@ -168,5 +168,6 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
             vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
         }
+        std::cout<<"i: "<<i<<std::endl;
     }   
 }
