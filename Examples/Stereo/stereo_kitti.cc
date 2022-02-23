@@ -172,7 +172,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             ss << setfill('0') << setw(6) << i;
             vstrImageLeft[new_counter] = strPrefixLeft + ss.str() + ".png";
             vstrImageRight[new_counter] = strPrefixRight + ss.str() + ".png";
-            newcounter++;
+            new_counter++;
         }
 
     }   
