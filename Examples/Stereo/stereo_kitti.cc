@@ -158,6 +158,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     vstrImageLeft.resize(nTimes);
     vstrImageRight.resize(nTimes);
 
+    std::cout<<"---- Before getting in the loop \n";
+
     for(int i=0; i<nTimes_loop; i++)
     {
         if(i%skip !=0){
