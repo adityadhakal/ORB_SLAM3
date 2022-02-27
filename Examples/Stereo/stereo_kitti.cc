@@ -145,8 +145,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             }
             else
                 std::cout<<"SKIPPED\n";
+            counter++;
         }
-        counter++;
 
     }
     std::cout<<"Counter: "<<counter<<std::endl;
