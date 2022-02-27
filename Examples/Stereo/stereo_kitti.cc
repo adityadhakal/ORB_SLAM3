@@ -174,6 +174,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             vstrImageRight[new_counter] = strPrefixRight + ss.str() + ".png";
             new_counter++;
         }
+        else
+            std::cout<<"2nd SKIPPED\n";
 
     }   
 }
