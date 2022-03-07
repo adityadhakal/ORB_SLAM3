@@ -142,7 +142,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
         }
 
     }
-    std::cout<<"Counter: "<<counter<<std::endl;
+    //std::cout<<"Counter: "<<counter<<std::endl;
     string strPrefixLeft = strPathToSequence + "/image_0/";
     string strPrefixRight = strPathToSequence + "/image_1/";
 
