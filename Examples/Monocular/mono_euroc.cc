@@ -95,6 +95,7 @@ int main(int argc, char **argv)
 
         if (!stream->read(im)) return -1;
 
+        double tframe = vTimestampsCam[seq][ni];
     /*
     for (seq = 0; seq<num_seq; seq++)
     {
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
 
             //added remove this for for loop
             ni++;
-        }
+        //}
 
         if(seq < num_seq - 1)
         {
