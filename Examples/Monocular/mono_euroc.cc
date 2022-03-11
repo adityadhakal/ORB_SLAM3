@@ -153,6 +153,9 @@ int main(int argc, char **argv)
 
             //added remove this for for loop
             ni++;
+            if (ni>1800){
+                break;
+            }
         //}
 
         if(seq < num_seq - 1)
