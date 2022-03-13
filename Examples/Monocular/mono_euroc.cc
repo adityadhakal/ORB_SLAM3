@@ -81,6 +81,8 @@ int main(int argc, char **argv)
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, true);
 
+    //the network part
+    /*
     cv::Mat im;
 
     cv::VideoCapture * stream = new cv::VideoCapture("udp://127.0.0.1:9090/");
@@ -96,7 +98,8 @@ int main(int argc, char **argv)
         if (!stream->read(im)) return -1;
 
         double tframe = vTimestampsCam[seq][ni];
-    /*
+        */
+    
     for (seq = 0; seq<num_seq; seq++)
     {
 
@@ -116,7 +119,7 @@ int main(int argc, char **argv)
                      <<  vstrImageFilenames[seq][ni] << endl;
                 return 1;
             }
-    */
+    
     #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     #else
@@ -152,11 +155,13 @@ int main(int argc, char **argv)
                 usleep((T-ttrack)*1e6);
 
             //added remove this for for loop
+            /*
             ni++;
             if (ni>1800){
                 break;
             }
-        //}
+            */
+        }
 
         if(seq < num_seq - 1)
         {
