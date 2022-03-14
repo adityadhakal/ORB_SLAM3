@@ -1657,6 +1657,7 @@ void Tracking::ComputeVelocitiesAccBias(const vector<Frame*> &vpFs, float &bax, 
 void Tracking::Track()
 {
     static int framecounter = 0;
+    int imugap = 5;
     cout<<"Frame COUNT: "<<framecounter<<endl;
 
     if (bStepByStep)
@@ -1800,8 +1801,10 @@ void Tracking::Track()
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
+                int start_img = framecounter%1200;
+
                 //Aditya: If IMUInitialized etc... track with reference frame for some frames
-                if((framecounter >= 1200 && framecounter < 1205) && pCurrentMap->isImuInitialized()){
+                if((framecounter >= 1200 && framecounter < (1200+imugap)) && pCurrentMap->isImuInitialized()){
                     //Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
                     cout<<"MODIFIED CODE... WILL TRACK WITH IMU FOR NEXT 5 FRAMES. Framecounter: "<<framecounter<<std::endl;
                     bOK = TrackWithMotionModel();
