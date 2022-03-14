@@ -1658,7 +1658,7 @@ void Tracking::Track()
 {
     static int framecounter = 0;
     int imugap = 5;
-    cout<<"Frame COUNT: "<<framecounter<<endl;
+    cout<<"Frame COUNT: "<<framecounter<<" Timestamp: "<<mCurrentFrame.mTimeStamp<<endl;
 
     if (bStepByStep)
     {
