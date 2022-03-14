@@ -1656,6 +1656,8 @@ void Tracking::ComputeVelocitiesAccBias(const vector<Frame*> &vpFs, float &bax, 
 
 void Tracking::Track()
 {
+    static int framecounter = 0;
+    cout<<"Frame COUNT: "<<framecounter<<endl;
 
     if (bStepByStep)
     {
@@ -1798,6 +1800,19 @@ void Tracking::Track()
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
+                //Aditya: If IMUInitialized etc... track with reference frame for some frames
+                if((framecounter >= 1200 && framecounter < 1205) && pCurrentMap->isImuInitialized()){
+                    //Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
+                    cout<<"MODIFIED CODE... WILL TRACK WITH IMU FOR NEXT 5 FRAMES. Framecounter: "<<framecounter<<std::endl;
+                    bOK = TrackWithMotionModel();
+                    if(!bOK){
+                        bOK = TrackReferenceKeyFrame();
+                        cout<<"IMU Tracking Failed. Frame: "<<framecounter<<endl;
+                    }
+
+                }
+                else{ //remove this Else, comes with upper condition.
+
                 if((mVelocity.empty() && !pCurrentMap->isImuInitialized()) || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
                     //Verbose::PrintMess("TRACK: Track with respect to the reference KF ", Verbose::VERBOSITY_DEBUG);
@@ -1810,6 +1825,7 @@ void Tracking::Track()
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
                 }
+            }//this bracket is with the added else.
 
 
                 if (!bOK)
