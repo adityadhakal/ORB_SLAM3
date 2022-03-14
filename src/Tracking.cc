@@ -1826,6 +1826,7 @@ void Tracking::Track()
                         bOK = TrackReferenceKeyFrame();
                 }
             }//this bracket is with the added else.
+            framecounter++;
 
 
                 if (!bOK)
