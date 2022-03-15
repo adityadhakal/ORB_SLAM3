@@ -1657,7 +1657,7 @@ void Tracking::ComputeVelocitiesAccBias(const vector<Frame*> &vpFs, float &bax, 
 void Tracking::Track()
 {
     static int framecounter = 0;
-    int imugap = 60;
+    int imugap = 30;
     cout<<"Frame COUNT: "<<framecounter<<" Timestamp: "<<mCurrentFrame.mTimeStamp<<endl;
 
     if (bStepByStep)
