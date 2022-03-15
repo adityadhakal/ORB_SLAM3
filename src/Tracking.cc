@@ -1801,7 +1801,7 @@ void Tracking::Track()
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
-                int start_img = framecounter%1200;
+                //int start_img = framecounter%1200;
 
                 //Aditya: If IMUInitialized etc... track with reference frame for some frames
                 if((framecounter >= 1200 && framecounter < (1200+imugap)) && pCurrentMap->isImuInitialized()){
@@ -1829,7 +1829,7 @@ void Tracking::Track()
                         bOK = TrackReferenceKeyFrame();
                 }
             }//this bracket is with the added else.
-            framecounter++;
+           
 
 
                 if (!bOK)
@@ -2117,12 +2117,14 @@ void Tracking::Track()
             bool bNeedKF = NeedNewKeyFrame();
 
 
-
-
+            if((framecounter >= 1200 && framecounter < (1200+imugap))){
+            //aditya.. only create a new keyframe if it is not the frames where IMU only is computed.
             // Check if we need to insert a new keyframe
             if(bNeedKF && (bOK|| (mState==RECENTLY_LOST && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO))))
                 CreateNewKeyFrame();
 
+        }
+         framecounter++; // increase the frame counter.
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();
 
