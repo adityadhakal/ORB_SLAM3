@@ -2114,17 +2114,18 @@ void Tracking::Track()
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
-            bool bNeedKF = NeedNewKeyFrame();
-
-
-            if((framecounter >= 1200 && framecounter < (1200+imugap))){
+              if(!(framecounter >= 1200 && framecounter < (1200+imugap))){
             //aditya.. only create a new keyframe if it is not the frames where IMU only is computed.
+            bool bNeedKF = NeedNewKeyFrame();
+        }
+         framecounter++; // increase the frame counter.
+          
             // Check if we need to insert a new keyframe
             if(bNeedKF && (bOK|| (mState==RECENTLY_LOST && (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO))))
                 CreateNewKeyFrame();
 
-        }
-         framecounter++; // increase the frame counter.
+        
+        
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();
 
