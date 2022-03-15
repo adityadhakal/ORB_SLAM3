@@ -2114,9 +2114,10 @@ void Tracking::Track()
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
-              if(!(framecounter >= 1200 && framecounter < (1200+imugap))){
-            //aditya.. only create a new keyframe if it is not the frames where IMU only is computed.
             bool bNeedKF = NeedNewKeyFrame();
+            if(!(framecounter >= 1200 && framecounter < (1200+imugap))){
+            //aditya.. only create a new keyframe if it is not the frames where IMU only is computed.
+            bNeedKF = false;
         }
          framecounter++; // increase the frame counter.
           
