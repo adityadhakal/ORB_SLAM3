@@ -199,12 +199,12 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
     int counter = 0;
-    int skip = 3;
+    int skip = 2;
     while(!fTimes.eof())
     {
         string s;
         getline(fTimes,s);
-        if(!s.empty()&& !(counter%skip!=0))
+        if(!s.empty()&& (counter%skip!=0))
         {
             stringstream ss;
             ss << s;
