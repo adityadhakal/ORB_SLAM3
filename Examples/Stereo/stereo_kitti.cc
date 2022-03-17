@@ -160,6 +160,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     }   
 }
 */
+/*
 
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps)
@@ -214,4 +215,4 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
 
     }   
 }
-
+*/
