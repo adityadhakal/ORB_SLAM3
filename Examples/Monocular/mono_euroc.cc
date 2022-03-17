@@ -198,11 +198,13 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
     fTimes.open(strPathTimes.c_str());
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
+    int counter = 0;
+    int skip = 3;
     while(!fTimes.eof())
     {
         string s;
         getline(fTimes,s);
-        if(!s.empty())
+        if(!s.empty()&& !(counter%skip!=0))
         {
             stringstream ss;
             ss << s;
