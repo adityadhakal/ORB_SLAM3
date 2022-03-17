@@ -214,5 +214,6 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
             vTimeStamps.push_back(t/1e9);
 
         }
+        counter++;
     }
 }
