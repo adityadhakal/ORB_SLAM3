@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/*
+
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps)
 {
@@ -159,7 +159,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
     }   
 }
-*/
+
 /*
 
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
