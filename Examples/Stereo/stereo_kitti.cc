@@ -169,7 +169,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     string strPathTimeFile = strPathToSequence + "/times.txt";
     fTimes.open(strPathTimeFile.c_str());
     int counter = 0;
-    int skip = 5; //skip one in 300.. big number of no skip... 
+    int skip = 15; //skip one in 300.. big number of no skip... 
     while(!fTimes.eof())
     {
         string s;
