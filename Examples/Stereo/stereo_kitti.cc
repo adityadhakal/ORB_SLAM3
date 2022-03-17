@@ -122,6 +122,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
+/*
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps)
 {
@@ -158,8 +159,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
     }   
 }
+*/
 
-/*
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps)
 {
@@ -167,7 +168,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     string strPathTimeFile = strPathToSequence + "/times.txt";
     fTimes.open(strPathTimeFile.c_str());
     int counter = 0;
-    int skip = 10000; //skip one in 300.. big number of no skip... 
+    int skip = 3; //skip one in 300.. big number of no skip... 
     while(!fTimes.eof())
     {
         string s;
@@ -178,7 +179,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
             ss << s;
             double t;
             ss >> t;
-            if(counter%skip != 0 && counter!=0){
+            if(!(counter%skip != 0 && counter!=0)){
                 vTimestamps.push_back(t);
             }
             else
@@ -200,7 +201,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     int new_counter = 0;
     for(int i=0; i<nTimes_loop; i++)
     {
-        if(i%skip !=0){
+        if(!(i%skip !=0)){
             stringstream ss;
             
             ss << setfill('0') << setw(6) << i;
@@ -213,4 +214,4 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
 
     }   
 }
-*/
+
